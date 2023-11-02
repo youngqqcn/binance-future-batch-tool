@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import sys
+import PySide6
 
 
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView
@@ -90,8 +91,8 @@ class Widget(QWidget):
 #        self.pushButton_modify.clicked.connect(self.ModifyTarget)
 #        self.pushButton_del.clicked.connect(self.DeleteTarget)
 #        self.ui.tableView.doubleClicked.connect(self.OnTargetDoubleClicked)
-#        self.targetSelectModel.selectionChanged.connect(self.OnSelectionChanged)
-#        self.targetItemModel.itemChanged.connect(self.OnCheckBoxItemChanged)
+        self.targetSelectModel.selectionChanged.connect(self.OnSelectionChanged)
+        self.targetItemModel.itemChanged.connect(self.OnCheckBoxItemChanged)
 
 
     def OnSelectionChanged(self,selectlist, deselectlist):
@@ -101,12 +102,12 @@ class Widget(QWidget):
             rowNum = item.row()
             colNum = item.column()
             # 0:Qt.Unchecked, 1:Qt.PartiallyChecked, 2:Qt.Checked
-            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState)
+            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Checked)
 
         for item in deselectlist.indexes():
             rowNum = item.row()
             colNum = item.column()
-            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.Unchecked)
+            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Unchecked)
 
     def OnCheckBoxItemChanged(self, item):
         print('OnCheckBoxItemChanged')
@@ -116,11 +117,11 @@ class Widget(QWidget):
 
         ModelIndex = self.targetItemModel.indexFromItem(item)
 
-        if self.targetItemModel.item(rowNum,colNum).checkState() == Qt.CheckState:
-            self.ui.tableView.selectRow(rowNum)
+        if self.targetItemModel.item(rowNum,colNum).checkState() == Qt.CheckState.Checked:
+            self.targetSelectModel.select(ModelIndex, QItemSelectionModel.Select)
 
-        elif self.targetItemModel.item(rowNum,colNum).checkState() == Qt.Unchecked:
-            self.targetSelectModel.select(ModelIndex, QItemSelectionModel.Deselect|QItemSelectionModel.Rows)
+        elif self.targetItemModel.item(rowNum,colNum).checkState() == Qt.CheckState.Unchecked:
+            self.targetSelectModel.select(ModelIndex, QItemSelectionModel.Deselect)
 
 
     def LoadTarget(self):
@@ -145,7 +146,7 @@ class Widget(QWidget):
         #第一列没有名称，为CheckBox
         self.targetItemModel.setHorizontalHeaderLabels(('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'))
         # self.ui.tableView.verticalHeader().hide()  #列表头不显示
-        # self.ui.tableView.horizontalHeader().setHighlightSections(False)
+        self.ui.tableView.horizontalHeader().setHighlightSections(False)
         # self.ui.tableView.setColumnWidth(0,10)    #设置各列宽度
         # self.ui.tableView.setColumnWidth(1,30)
         # self.ui.tableView.setColumnWidth(2,115)
@@ -154,8 +155,7 @@ class Widget(QWidget):
 
         for row in range(len(self.targetlist)):
             for col in range(len(self.targetlist[0])):
-                #cell为第一列，不能编辑，有勾选框可以勾选
-                cell = QStandardItem()
+                cell = QStandardItem(str(self.targetlist[row][col]))
                 cell.setCheckable(True)
                 cell.setEditable(False)
                 self.targetItemModel.setItem(row, col, cell)
