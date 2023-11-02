@@ -3,7 +3,7 @@ import sys
 import PySide6
 
 
-from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView
+from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel
 from PySide6.QtGui import  QStandardItem
 from PySide6.QtCore import QItemSelectionModel
@@ -67,10 +67,27 @@ class Widget(QWidget):
 
         self.initTargetView()
 
+
         # 初始化数据库
         self.__initDatabase__()
 
         pass
+
+    def closeEvent(self,event):
+        """重载窗口关闭事件， 关闭数据库"""
+
+        reply = QMessageBox.question(self, '警告',"系统将退出，是否确认?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
+        print('=====close db===========')
+        self.db.close()
+
+        super().closeEvent(event)
+
 
     def initTargetView(self):
         print('initTargetView')
@@ -173,7 +190,8 @@ class Widget(QWidget):
 
         self.db = db
         if len(db.tables()) == 0:
-            query = QSqlQuery()
+            query = QSqlQuery(self.db)
+            self.sqlQuery = query
 
             # 创建tokenlist表
             ret = query.exec("""CREATE TABLE tb_tokenlist (
@@ -189,8 +207,6 @@ class Widget(QWidget):
             query.exec("""INSERT INTO tb_tokenlist(token) VALUES('EEEE')""")
             query.exec("""INSERT INTO tb_tokenlist(token) VALUES('FFFF')""")
             query.exec("""INSERT INTO tb_tokenlist(token) VALUES('GGGG')""")
-
-            db.close()
         else:
             print("数据库已经存在")
 
@@ -198,6 +214,9 @@ class Widget(QWidget):
     def addToken(self):
         """添加币种"""
         print('add token')
+
+
+
         pass
 
     def deleteToken(self):
