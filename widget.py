@@ -8,6 +8,7 @@ from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel
 from PySide6.QtGui import  QStandardItem
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
 
 # Important:
@@ -33,7 +34,6 @@ class Widget(QWidget):
         self.ui.leMultiples.setValidator(multipleVal)
 
 
-
         # stop loss validator
         stopLossVal = QDoubleValidator()
         stopLossVal.setRange(0, 99.0)
@@ -49,23 +49,26 @@ class Widget(QWidget):
 
 
         # 开多
-        self.ui.btnMakeLong.clicked.connect(lambda: self.makeLongClicked(1))
+        self.ui.btnMakeLong.clicked.connect(self.makeLong)
 
         # 开空
-        self.ui.btnMakeShort.clicked.connect(lambda: self.makeShortClicked(1))
+        self.ui.btnMakeShort.clicked.connect(self.makeShort)
 
         # 添加币种
-        self.ui.btnAddToken.clicked.connect(lambda: self.addToken())
+        self.ui.btnAddToken.clicked.connect(self.addToken)
 
 
         # 删除币种
-        self.ui.btnDeleteToken.clicked.connect(lambda: self.deleteToken())
+        self.ui.btnDeleteToken.clicked.connect(self.deleteToken)
 
         # 市价全平（选中）
-        self.ui.btnClosePosition.clicked.connect(lambda: self.closePosition())
+        self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
 
         self.initTargetView()
+
+        # 初始化数据库
+        self.__initDatabase__()
 
         pass
 
@@ -87,10 +90,6 @@ class Widget(QWidget):
         self.ui.tableView.setSelectionModel(self.targetSelectModel)
 
 
-#        self.pushButton_add.clicked.connect(self.CreateTarget)
-#        self.pushButton_modify.clicked.connect(self.ModifyTarget)
-#        self.pushButton_del.clicked.connect(self.DeleteTarget)
-#        self.ui.tableView.doubleClicked.connect(self.OnTargetDoubleClicked)
         self.targetSelectModel.selectionChanged.connect(self.OnSelectionChanged)
         self.targetItemModel.itemChanged.connect(self.OnCheckBoxItemChanged)
 
@@ -140,7 +139,6 @@ class Widget(QWidget):
             ['JJJ1', 'JJJ2', 'JJJ3', 'JJJ4', 'JJJ5', 'JJJ6', 'JJJ7', 'JJJ8', 'JJJ9', 'JJJ10'],
         ]
 
-        RowNum = len(self.targetlist)
         #每次导入时将Model中的数据清除，重新初始化
         self.targetItemModel.clear()
         #第一列没有名称，为CheckBox
@@ -160,30 +158,71 @@ class Widget(QWidget):
                 cell.setEditable(False)
                 self.targetItemModel.setItem(row, col, cell)
 
-                # for col in range():
-                #     cell = QStandardItem(str(self.targetlist[row][col]))
-                #     cell.setEditable(False)
-                #     self.targetItemModel.setItem(row, col, cell)
-
         self.ui.tableView.show()
 
 
-    def makeLongClicked(self, n):
-        print("btnMakeLong {0} is Clicked".format(n))
+    def __initDatabase__(self):
+        db = QSqlDatabase.addDatabase('QSQLITE')#指定数据库类型
+        #指定SQLite数据库文件名
+        db.setDatabaseName('future.db')
+        db.setUserName("futurebitcoin2023")
+        db.setPassword("makemoremoney2023")
+        if not db.open():
+            print('无法建立与数据库的连接')
+            return False
 
-    def makeShortClicked(self, n):
-        print("btnMakeShort {0} is Clicked".format(n))
+        self.db = db
+        if len(db.tables()) == 0:
+            query = QSqlQuery()
+
+            # 创建tokenlist表
+            ret = query.exec("""CREATE TABLE tb_tokenlist (
+                token VARCHAR(10) PRIMARY KEY
+            )""")
+            if False == ret:
+                print("创建表失败")
+
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('AAAA')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('BBBB')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('CCCC')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('DDDD')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('EEEE')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('FFFF')""")
+            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('GGGG')""")
+
+            db.close()
+        else:
+            print("数据库已经存在")
 
 
     def addToken(self):
+        """添加币种"""
         print('add token')
         pass
 
     def deleteToken(self):
+        """删除币种"""
         print('delete token')
         pass
 
+    def makeLong(self ):
+        """
+        市价开多
+        """
+
+        print("makeLong")
+
+    def makeShort(self):
+        """
+        市价开空
+        """
+        print("makeShort")
+
+
+
+
     def closePosition(self):
+        """市价平仓"""
         print("close position all selected p")
         pass
 
