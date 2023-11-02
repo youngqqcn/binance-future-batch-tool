@@ -130,12 +130,9 @@ class Ui_Widget(object):
         self.groupBox_3 = QGroupBox(Widget)
         self.groupBox_3.setObjectName(u"groupBox_3")
         self.groupBox_3.setGeometry(QRect(1070, 10, 301, 121))
-        self.leToken = QLineEdit(self.groupBox_3)
-        self.leToken.setObjectName(u"leToken")
-        self.leToken.setGeometry(QRect(10, 30, 151, 31))
         self.widget = QWidget(self.groupBox_3)
         self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(10, 70, 241, 41))
+        self.widget.setGeometry(QRect(10, 80, 241, 41))
         self.horizontalLayout_5 = QHBoxLayout(self.widget)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -149,6 +146,22 @@ class Ui_Widget(object):
 
         self.horizontalLayout_5.addWidget(self.btnAddToken)
 
+        self.widget1 = QWidget(self.groupBox_3)
+        self.widget1.setObjectName(u"widget1")
+        self.widget1.setGeometry(QRect(10, 30, 191, 41))
+        self.horizontalLayout_4 = QHBoxLayout(self.widget1)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.label_5 = QLabel(self.widget1)
+        self.label_5.setObjectName(u"label_5")
+
+        self.horizontalLayout_4.addWidget(self.label_5)
+
+        self.leToken = QLineEdit(self.widget1)
+        self.leToken.setObjectName(u"leToken")
+
+        self.horizontalLayout_4.addWidget(self.leToken)
+
         self.tableView = QTableView(Widget)
         self.tableView.setObjectName(u"tableView")
         self.tableView.setGeometry(QRect(10, 10, 1021, 731))
@@ -160,9 +173,9 @@ class Ui_Widget(object):
 
     def retranslateUi(self, Widget):
         Widget.setWindowTitle(QCoreApplication.translate("Widget", u"Widget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u5e73\u4ed3\u64cd\u4f5c:", None))
+        self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5e73\u4ed3\u64cd\u4f5c:", None))
         self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5168\u5e73(\u9009\u4e2d)", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("Widget", u"\u5f00\u4ed3\u64cd\u4f5c:", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5f00\u4ed3\u64cd\u4f5c:", None))
         self.label_4.setText(QCoreApplication.translate("Widget", u"\u7c7b\u578b:", None))
         self.rbtnUsdtBase.setText(QCoreApplication.translate("Widget", u"U\u672c\u4f4d", None))
         self.rbtnTokenBase.setText(QCoreApplication.translate("Widget", u"\u5e01\u672c\u4f4d", None))
@@ -172,8 +185,9 @@ class Ui_Widget(object):
         self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.btnMakeShort.setText(QCoreApplication.translate("Widget", u"\u5f00\u7a7a", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("Widget", u"\u5e01\u79cd\u7ba1\u7406:", None))
-        self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
         self.btnDeleteToken.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
         self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))
+        self.label_5.setText(QCoreApplication.translate("Widget", u"\u5e01\u540d:", None))
+        self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
     # retranslateUi
 

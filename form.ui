@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>平仓操作:</string>
+    <string>市价平仓操作:</string>
    </property>
    <widget class="QPushButton" name="btnClosePosition">
     <property name="geometry">
@@ -49,7 +49,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>开仓操作:</string>
+    <string>市价开仓操作:</string>
    </property>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
@@ -185,24 +185,11 @@
    <property name="title">
     <string>币种管理:</string>
    </property>
-   <widget class="QLineEdit" name="leToken">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>151</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="placeholderText">
-     <string>输入币名...</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>70</y>
+      <y>80</y>
       <width>241</width>
       <height>41</height>
      </rect>
@@ -219,6 +206,32 @@
       <widget class="QPushButton" name="btnAddToken">
        <property name="text">
         <string>添加</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>191</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>币名:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="leToken">
+       <property name="placeholderText">
+        <string>输入币名...</string>
        </property>
       </widget>
      </item>

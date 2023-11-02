@@ -44,10 +44,9 @@ class Widget(QWidget):
 
 
         # stop loss validator
-        stopLossVal = QDoubleValidator()
-        stopLossVal.setRange(0, 99.0)
-        stopLossVal.setTop(99.0)
-        stopLossVal.setDecimals(1)
+        stopLossVal = QIntValidator()
+        stopLossVal.setRange(0, 99)
+        stopLossVal.setTop(99)
         self.ui.leStopLossRatio.setValidator(stopLossVal)
 
         # amount validator
@@ -58,6 +57,9 @@ class Widget(QWidget):
 
 
         self.ui.leToken.textChanged.connect(self.autoCapitalize)
+
+        # 默认U本位
+        self.ui.rbtnUsdtBase.setChecked(True)
 
 
         # 开多
@@ -289,18 +291,57 @@ class Widget(QWidget):
         # 更新界面
         self.LoadTarget()
 
+    def checkOrderData(self):
+        """检查订单参数"""
+
+        if not self.ui.rbtnTokenBase.isChecked() and not self.ui.rbtnUsdtBase.isChecked():
+            QMessageBox.question(self, '提示', f"请选择'类型'", QMessageBox.Yes)
+            return False
+
+        # 检查倍数
+        txtMultiples = self.ui.leMultiples.text()
+        if len(txtMultiples) == 0:
+            QMessageBox.question(self, '提示', f"请输入'倍数'", QMessageBox.Yes)
+            return False
+        if int(txtMultiples) >= 50:
+            r = QMessageBox.question(self, '提示', f"下单杠杆倍数{int(txtMultiples)},风险很高,是否继续？", QMessageBox.Yes, QMessageBox.No)
+            if r == QMessageBox.No:
+                return False
+
+
+        # 检查止损
+        txtStoplossRatio = self.ui.leStopLossRatio.text()
+        if len(txtStoplossRatio) == 0:
+            QMessageBox.question(self, '提示', f"请输入'止损'", QMessageBox.Yes)
+            return False
+
+
+        # 检查数量
+        txtAmout = self.ui.leAmount.text()
+        if len(txtAmout) == 0:
+            QMessageBox.question(self, '提示', f"请输入'数量'", QMessageBox.Yes)
+            return False
+
+        return True
+
     def makeLong(self ):
         """
         市价开多
         """
-
         print("makeLong")
+
+        if not self.checkOrderData():
+            return
+        print('============> 开多成功')
 
     def makeShort(self):
         """
         市价开空
         """
         print("makeShort")
+        if not self.checkOrderData():
+            return
+        print('============> 开空成功')
 
 
 
