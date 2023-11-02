@@ -1,9 +1,13 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout
 
-from PySide6.QtGui import QIntValidator,QDoubleValidator
+from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView
+from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel
+from PySide6.QtGui import  QStandardItem
+from PySide6.QtCore import QItemSelectionModel
+from PySide6.QtCore import Qt
+
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -19,13 +23,8 @@ class Widget(QWidget):
         self.ui.setupUi(self)
 
 
-#        btnMakeLong = QPushButton("long", self)
-#        layout = QHBoxLayout()
-#        layout.addWidget(btnMakeLong)
-#        self.setLayout(layout)
-
-        self.setWindowTitle("合约一键下单工具")
-        self.resize(800, 600)
+        self.setWindowTitle("合约一键下单工具v1.0")
+        #self.resize(800, 600)
 
         # multiple validator
         multipleVal = QIntValidator()
@@ -48,18 +47,125 @@ class Widget(QWidget):
         self.ui.leAmount.setValidator(amountVal)
 
 
-        # make long
+        # 开多
         self.ui.btnMakeLong.clicked.connect(lambda: self.makeLongClicked(1))
 
-        # make short
+        # 开空
         self.ui.btnMakeShort.clicked.connect(lambda: self.makeShortClicked(1))
 
+        # 添加币种
         self.ui.btnAddToken.clicked.connect(lambda: self.addToken())
 
+
+        # 删除币种
         self.ui.btnDeleteToken.clicked.connect(lambda: self.deleteToken())
+
+        # 市价全平（选中）
+        self.ui.btnClosePosition.clicked.connect(lambda: self.closePosition())
+
+
+        self.initTargetView()
 
         pass
 
+    def initTargetView(self):
+        print('initTargetView')
+
+        self.targetItemModel = QStandardItemModel()
+        self.ui.tableView.setModel(self.targetItemModel)
+
+        #按照Items选择，可选择多个
+        self.ui.tableView.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.ui.tableView.setSelectionMode(QAbstractItemView.MultiSelection)
+
+        #初始化QStandardItemModel
+        self.LoadTarget()
+
+        #需要初始化设置QItemSelectionModel
+        self.targetSelectModel = QItemSelectionModel(self.targetItemModel)
+        self.ui.tableView.setSelectionModel(self.targetSelectModel)
+
+
+#        self.pushButton_add.clicked.connect(self.CreateTarget)
+#        self.pushButton_modify.clicked.connect(self.ModifyTarget)
+#        self.pushButton_del.clicked.connect(self.DeleteTarget)
+#        self.ui.tableView.doubleClicked.connect(self.OnTargetDoubleClicked)
+#        self.targetSelectModel.selectionChanged.connect(self.OnSelectionChanged)
+#        self.targetItemModel.itemChanged.connect(self.OnCheckBoxItemChanged)
+
+
+    def OnSelectionChanged(self,selectlist, deselectlist):
+        print('OnSelectionChanged')
+        #选择项改变后，遍历选择的行，将第一列设置为Qt.Checked状态，遍历未选择的行，将未选择的行设置为Qt.Unchecked状态。
+        for item in selectlist.indexes():
+            rowNum = item.row()
+            colNum = item.column()
+            # 0:Qt.Unchecked, 1:Qt.PartiallyChecked, 2:Qt.Checked
+            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState)
+
+        for item in deselectlist.indexes():
+            rowNum = item.row()
+            colNum = item.column()
+            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.Unchecked)
+
+    def OnCheckBoxItemChanged(self, item):
+        print('OnCheckBoxItemChanged')
+        #对于itemChanged的单元格，获取行的行号和索引，如果该行的checkState为Checked则选择整行，如果checkState为Unchecked，则整行变为不选择。
+        rowNum = item.row()
+        colNum = item.column()
+
+        ModelIndex = self.targetItemModel.indexFromItem(item)
+
+        if self.targetItemModel.item(rowNum,colNum).checkState() == Qt.CheckState:
+            self.ui.tableView.selectRow(rowNum)
+
+        elif self.targetItemModel.item(rowNum,colNum).checkState() == Qt.Unchecked:
+            self.targetSelectModel.select(ModelIndex, QItemSelectionModel.Deselect|QItemSelectionModel.Rows)
+
+
+    def LoadTarget(self):
+        print('LoadTarget')
+        #从数据库获取Target信息，类似表格表格数据
+        self.targetlist = [
+            ['AAA1', 'AAA2', 'AAA3', 'AAA4', 'AAA5', 'AAA6', 'AAA7', 'AAA8', 'AAA9', 'AAA10'],
+            ['BBB1', 'BBB2', 'BBB3', 'BBB4', 'BBB5', 'BBB6', 'BBB7', 'BBB8', 'BBB9', 'BBB10'],
+            ['CCC1', 'CCC2', 'CCC3', 'CCC4', 'CCC5', 'CCC6', 'CCC7', 'CCC8', 'CCC9', 'CCC10'],
+            ['DDD1', 'DDD2', 'DDD3', 'DDD4', 'DDD5', 'DDD6', 'DDD7', 'DDD8', 'DDD9', 'DDD10'],
+            ['EEE1', 'EEE2', 'EEE3', 'EEE4', 'EEE5', 'EEE6', 'EEE7', 'EEE8', 'EEE9', 'EEE10'],
+            ['FFF1', 'FFF2', 'FFF3', 'FFF4', 'FFF5', 'FFF6', 'FFF7', 'FFF8', 'FFF9', 'FFF10'],
+            ['GGG1', 'GGG2', 'GGG3', 'GGG4', 'GGG5', 'GGG6', 'GGG7', 'GGG8', 'GGG9', 'GGG10'],
+            ['HHH1', 'HHH2', 'HHH3', 'HHH4', 'HHH5', 'HHH6', 'HHH7', 'HHH8', 'HHH9', 'HHH10'],
+            ['III1', 'III2', 'III3', 'III4', 'III5', 'III6', 'III7', 'III8', 'III9', 'III10'],
+            ['JJJ1', 'JJJ2', 'JJJ3', 'JJJ4', 'JJJ5', 'JJJ6', 'JJJ7', 'JJJ8', 'JJJ9', 'JJJ10'],
+        ]
+
+        RowNum = len(self.targetlist)
+        #每次导入时将Model中的数据清除，重新初始化
+        self.targetItemModel.clear()
+        #第一列没有名称，为CheckBox
+        self.targetItemModel.setHorizontalHeaderLabels(('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'))
+        # self.ui.tableView.verticalHeader().hide()  #列表头不显示
+        # self.ui.tableView.horizontalHeader().setHighlightSections(False)
+        # self.ui.tableView.setColumnWidth(0,10)    #设置各列宽度
+        # self.ui.tableView.setColumnWidth(1,30)
+        # self.ui.tableView.setColumnWidth(2,115)
+        # self.ui.tableView.setColumnWidth(3,85)
+        # self.ui.tableView.setColumnWidth(4,40)
+
+        for row in range(len(self.targetlist)):
+            for col in range(len(self.targetlist[0])):
+                #cell为第一列，不能编辑，有勾选框可以勾选
+                cell = QStandardItem()
+                cell.setCheckable(True)
+                cell.setEditable(False)
+                self.targetItemModel.setItem(row, col, cell)
+
+                # for col in range():
+                #     cell = QStandardItem(str(self.targetlist[row][col]))
+                #     cell.setEditable(False)
+                #     self.targetItemModel.setItem(row, col, cell)
+
+        self.ui.tableView.show()
 
 
     def makeLongClicked(self, n):
@@ -75,6 +181,10 @@ class Widget(QWidget):
 
     def deleteToken(self):
         print('delete token')
+        pass
+
+    def closePosition(self):
+        print("close position all selected p")
         pass
 
 
