@@ -133,13 +133,15 @@ class Widget(QWidget):
         for item in selectlist.indexes():
             rowNum = item.row()
             colNum = item.column()
-            # 0:Qt.Unchecked, 1:Qt.PartiallyChecked, 2:Qt.Checked
-            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Checked)
+            if self.targetItemModel.item(rowNum, colNum) is not None:
+                # 0:Qt.Unchecked, 1:Qt.PartiallyChecked, 2:Qt.Checked
+                self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Checked)
 
         for item in deselectlist.indexes():
             rowNum = item.row()
             colNum = item.column()
-            self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Unchecked)
+            if self.targetItemModel.item(rowNum, colNum) is not None:
+                self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Unchecked)
 
     def OnCheckBoxItemChanged(self, item):
         print('OnCheckBoxItemChanged')
@@ -160,25 +162,20 @@ class Widget(QWidget):
     def LoadTarget(self):
         print('LoadTarget')
         #从数据库获取Target信息，类似表格表格数据
-        # self.targetlist = [
-        #     ['AAA1', 'AAA2', 'AAA3', 'AAA4', 'AAA5', 'AAA6', 'AAA7', 'AAA8', 'AAA9', 'AAA10'],
-        #     ['BBB1', 'BBB2', 'BBB3', 'BBB4', 'BBB5', 'BBB6', 'BBB7', 'BBB8', 'BBB9', 'BBB10'],
-        #     ['CCC1', 'CCC2', 'CCC3', 'CCC4', 'CCC5', 'CCC6', 'CCC7', 'CCC8', 'CCC9', 'CCC10'],
-        #     ['DDD1', 'DDD2', 'DDD3', 'DDD4', 'DDD5', 'DDD6', 'DDD7', 'DDD8', 'DDD9', 'DDD10'],
-        #     ['EEE1', 'EEE2', 'EEE3', 'EEE4', 'EEE5', 'EEE6', 'EEE7', 'EEE8', 'EEE9', 'EEE10'],
-        #     ['FFF1', 'FFF2', 'FFF3', 'FFF4', 'FFF5', 'FFF6', 'FFF7', 'FFF8', 'FFF9', 'FFF10'],
-        #     ['GGG1', 'GGG2', 'GGG3', 'GGG4', 'GGG5', 'GGG6', 'GGG7', 'GGG8', 'GGG9', 'GGG10'],
-        #     ['HHH1', 'HHH2', 'HHH3', 'HHH4', 'HHH5', 'HHH6', 'HHH7', 'HHH8', 'HHH9', 'HHH10'],
-        #     ['III1', 'III2', 'III3', 'III4', 'III5', 'III6', 'III7', 'III8', 'III9', 'III10'],
-        #     ['JJJ1', 'JJJ2', 'JJJ3', 'JJJ4', 'JJJ5', 'JJJ6', 'JJJ7', 'JJJ8', 'JJJ9', 'JJJ10'],
-        # ]
         self.targetlist = self.loadTokenFromDatabase()
         print(self.targetlist)
+
+        # 列头，用数字表述
+        columnHears = []
+        if len(self.targetlist) > 0 :
+            cols = len(self.targetlist[0])
+            for i in range(1, cols):
+                columnHears.append( f'{i}')
 
         #每次导入时将Model中的数据清除，重新初始化
         self.targetItemModel.clear()
         #第一列没有名称，为CheckBox
-        self.targetItemModel.setHorizontalHeaderLabels(('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'))
+        self.targetItemModel.setHorizontalHeaderLabels(tuple(columnHears))
         # self.ui.tableView.verticalHeader().hide()  #列表头不显示
         self.ui.tableView.horizontalHeader().setHighlightSections(False)
         # self.ui.tableView.setColumnWidth(0,10)    #设置各列宽度
@@ -189,10 +186,16 @@ class Widget(QWidget):
 
         for row in range(len(self.targetlist)):
             for col in range(len(self.targetlist[0])):
-                cell = QStandardItem(str(self.targetlist[row][col]))
-                cell.setCheckable(True)
-                cell.setEditable(False)
-                self.targetItemModel.setItem(row, col, cell)
+                if col <  len(self.targetlist[row]):
+                    cell = QStandardItem(str(self.targetlist[row][col]))
+                    cell.setCheckable(True)
+                    cell.setEditable(False)
+                    self.targetItemModel.setItem(row, col, cell)
+                else:
+                    # 那些空白格子不能操作
+                    cell = QStandardItem()
+                    cell.setEnabled(False)
+                    self.targetItemModel.setItem(row, col, cell)
 
         self.ui.tableView.show()
 
@@ -246,12 +249,13 @@ class Widget(QWidget):
         # 一维数组转 Nx10 二维数组
         tables = []
         row = []
-        for i in range(len(tokens)):
-            row.append(tokens[i ])
-            if i != 0 and (i % 10) == 0:
+        for i in range(1, len(tokens) + 1):
+            row.append(tokens[i -1 ])
+            if (i % 10) == 0:
                 tables.append(row)
                 row = []
-        tables.append(row)
+        if len(row) > 0:
+            tables.append(row)
         return tables
 
 
