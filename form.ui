@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1570</width>
+    <width>1394</width>
     <height>754</height>
    </rect>
   </property>
@@ -16,8 +16,8 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>1260</x>
-     <y>50</y>
+     <x>1070</x>
+     <y>140</y>
      <width>301</width>
      <height>111</height>
     </rect>
@@ -42,7 +42,7 @@
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
     <rect>
-     <x>1260</x>
+     <x>1070</x>
      <y>270</y>
      <width>301</width>
      <height>331</height>
@@ -173,61 +173,65 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>90</x>
-     <y>30</y>
-     <width>331</width>
-     <height>91</height>
+     <x>1070</x>
+     <y>10</y>
+     <width>301</width>
+     <height>121</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>币对管理:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="leToken">
-        <property name="placeholderText">
-         <string>输入币名...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QPushButton" name="btnDeleteToken">
-        <property name="text">
-         <string>删除</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnAddToken">
-        <property name="text">
-         <string>添加</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
+   <property name="title">
+    <string>币种管理:</string>
+   </property>
+   <widget class="QLineEdit" name="leToken">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>输入币名...</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>70</y>
+      <width>241</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QPushButton" name="btnDeleteToken">
+       <property name="text">
+        <string>删除</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnAddToken">
+       <property name="text">
+        <string>添加</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QTableView" name="tableView">
    <property name="geometry">
     <rect>
-     <x>91</x>
-     <y>134</y>
-     <width>1111</width>
-     <height>601</height>
+     <x>10</x>
+     <y>10</y>
+     <width>1021</width>
+     <height>731</height>
     </rect>
    </property>
   </widget>

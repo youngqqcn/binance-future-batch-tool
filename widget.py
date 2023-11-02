@@ -76,11 +76,6 @@ class Widget(QWidget):
         # 市价全平（选中）
         self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
-
-
-
-
-
         self.initTargetView()
 
         pass
@@ -88,12 +83,12 @@ class Widget(QWidget):
     def closeEvent(self,event):
         """重载窗口关闭事件， 关闭数据库"""
 
-        reply = QMessageBox.question(self, '警告',"系统将退出，是否确认?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
+        # reply = QMessageBox.question(self, '警告',"系统将退出，是否确认?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
 
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
+        # if reply == QMessageBox.Yes:
+        #     event.accept()
+        # else:
+        #     event.ignore()
 
         print('=====close db===========')
         self.db.close()
@@ -128,7 +123,7 @@ class Widget(QWidget):
 
 
     def OnSelectionChanged(self,selectlist, deselectlist):
-        print('OnSelectionChanged')
+        # print('OnSelectionChanged')
         #选择项改变后，遍历选择的行，将第一列设置为Qt.Checked状态，遍历未选择的行，将未选择的行设置为Qt.Unchecked状态。
         for item in selectlist.indexes():
             rowNum = item.row()
@@ -144,7 +139,7 @@ class Widget(QWidget):
                 self.targetItemModel.item(rowNum, colNum).setCheckState(Qt.CheckState.Unchecked)
 
     def OnCheckBoxItemChanged(self, item):
-        print('OnCheckBoxItemChanged')
+        # print('OnCheckBoxItemChanged')
         #对于itemChanged的单元格，获取行的行号和索引，如果该行的checkState为Checked则选择整行，如果checkState为Unchecked，则整行变为不选择。
         rowNum = item.row()
         colNum = item.column()
@@ -178,11 +173,7 @@ class Widget(QWidget):
         self.targetItemModel.setHorizontalHeaderLabels(tuple(columnHears))
         # self.ui.tableView.verticalHeader().hide()  #列表头不显示
         self.ui.tableView.horizontalHeader().setHighlightSections(False)
-        # self.ui.tableView.setColumnWidth(0,10)    #设置各列宽度
-        # self.ui.tableView.setColumnWidth(1,30)
-        # self.ui.tableView.setColumnWidth(2,115)
-        # self.ui.tableView.setColumnWidth(3,85)
-        # self.ui.tableView.setColumnWidth(4,40)
+
 
         for row in range(len(self.targetlist)):
             for col in range(len(self.targetlist[0])):
@@ -263,6 +254,9 @@ class Widget(QWidget):
         """添加币种"""
         token = self.ui.leToken.text()
         print(f'add token {token}')
+        reply = QMessageBox.question(self, '提示', f"是否添加: {token} ?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.No:
+            return
 
         query = QSqlQuery(self.db)
         query.exec("""SELECT * from tb_tokenlist WHERE `token`='{0}'""".format(token))
@@ -272,12 +266,28 @@ class Widget(QWidget):
 
         if not query.exec("""INSERT INTO tb_tokenlist(token) VALUES('{0}')""".format(token)):
             QMessageBox.warning(self, '错误',f"{token}添加失败", QMessageBox.Yes)
+
+        # 更新界面
+        self.LoadTarget()
         pass
 
     def deleteToken(self):
         """删除币种"""
         print('delete token')
-        pass
+
+        token = self.ui.leToken.text()
+        print(f'delete token {token}')
+        reply = QMessageBox.question(self, '提示', f"是否删除: {token} ?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.No:
+            return
+
+        query = QSqlQuery(self.db)
+        if not query.exec("""DELETE from tb_tokenlist WHERE `token`='{0}'""".format(token)):
+            errText = query.lastError().text()
+            QMessageBox.warning(self, '错误',f"{token}删除失败: {errText}", QMessageBox.Yes)
+
+        # 更新界面
+        self.LoadTarget()
 
     def makeLong(self ):
         """

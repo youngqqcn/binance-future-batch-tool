@@ -24,16 +24,16 @@ class Ui_Widget(object):
     def setupUi(self, Widget):
         if not Widget.objectName():
             Widget.setObjectName(u"Widget")
-        Widget.resize(1570, 754)
+        Widget.resize(1394, 754)
         self.groupBox = QGroupBox(Widget)
         self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(1260, 50, 301, 111))
+        self.groupBox.setGeometry(QRect(1070, 140, 301, 111))
         self.btnClosePosition = QPushButton(self.groupBox)
         self.btnClosePosition.setObjectName(u"btnClosePosition")
         self.btnClosePosition.setGeometry(QRect(50, 50, 171, 41))
         self.groupBox_2 = QGroupBox(Widget)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(1260, 270, 301, 331))
+        self.groupBox_2.setGeometry(QRect(1070, 270, 301, 331))
         self.layoutWidget = QWidget(self.groupBox_2)
         self.layoutWidget.setObjectName(u"layoutWidget")
         self.layoutWidget.setGeometry(QRect(20, 40, 253, 258))
@@ -127,29 +127,18 @@ class Ui_Widget(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
-        self.widget = QWidget(Widget)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(90, 30, 331, 91))
-        self.verticalLayout_3 = QVBoxLayout(self.widget)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_5 = QLabel(self.widget)
-        self.label_5.setObjectName(u"label_5")
-
-        self.horizontalLayout_4.addWidget(self.label_5)
-
-        self.leToken = QLineEdit(self.widget)
+        self.groupBox_3 = QGroupBox(Widget)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.groupBox_3.setGeometry(QRect(1070, 10, 301, 121))
+        self.leToken = QLineEdit(self.groupBox_3)
         self.leToken.setObjectName(u"leToken")
-
-        self.horizontalLayout_4.addWidget(self.leToken)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_4)
-
-        self.horizontalLayout_5 = QHBoxLayout()
+        self.leToken.setGeometry(QRect(10, 30, 151, 31))
+        self.widget = QWidget(self.groupBox_3)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(10, 70, 241, 41))
+        self.horizontalLayout_5 = QHBoxLayout(self.widget)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.btnDeleteToken = QPushButton(self.widget)
         self.btnDeleteToken.setObjectName(u"btnDeleteToken")
 
@@ -160,12 +149,9 @@ class Ui_Widget(object):
 
         self.horizontalLayout_5.addWidget(self.btnAddToken)
 
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
-
         self.tableView = QTableView(Widget)
         self.tableView.setObjectName(u"tableView")
-        self.tableView.setGeometry(QRect(91, 134, 1111, 601))
+        self.tableView.setGeometry(QRect(10, 10, 1021, 731))
 
         self.retranslateUi(Widget)
 
@@ -185,7 +171,7 @@ class Ui_Widget(object):
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u6570\u91cf:", None))
         self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.btnMakeShort.setText(QCoreApplication.translate("Widget", u"\u5f00\u7a7a", None))
-        self.label_5.setText(QCoreApplication.translate("Widget", u"\u5e01\u5bf9\u7ba1\u7406:", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("Widget", u"\u5e01\u79cd\u7ba1\u7406:", None))
         self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
         self.btnDeleteToken.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
         self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))
