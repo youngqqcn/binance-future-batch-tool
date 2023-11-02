@@ -291,8 +291,17 @@ class Widget(QWidget):
         # 更新界面
         self.LoadTarget()
 
+
+
     def checkOrderData(self):
         """检查订单参数"""
+
+        # 有效性检查:
+        txType = ''
+        if self.ui.rbtnUsdtBase.isChecked():
+            txType = 'U'
+        else:
+            txType = '币'
 
         if not self.ui.rbtnTokenBase.isChecked() and not self.ui.rbtnUsdtBase.isChecked():
             QMessageBox.question(self, '提示', f"请选择'类型'", QMessageBox.Yes)
@@ -303,11 +312,6 @@ class Widget(QWidget):
         if len(txtMultiples) == 0:
             QMessageBox.question(self, '提示', f"请输入'倍数'", QMessageBox.Yes)
             return False
-        if int(txtMultiples) >= 50:
-            r = QMessageBox.question(self, '提示', f"下单杠杆倍数{int(txtMultiples)},风险很高,是否继续？", QMessageBox.Yes, QMessageBox.No)
-            if r == QMessageBox.No:
-                return False
-
 
         # 检查止损
         txtStoplossRatio = self.ui.leStopLossRatio.text()
@@ -315,12 +319,34 @@ class Widget(QWidget):
             QMessageBox.question(self, '提示', f"请输入'止损'", QMessageBox.Yes)
             return False
 
-
         # 检查数量
         txtAmout = self.ui.leAmount.text()
         if len(txtAmout) == 0:
             QMessageBox.question(self, '提示', f"请输入'数量'", QMessageBox.Yes)
             return False
+
+        # 下单数据确认
+        if True:
+            tips = f"\n类型: {txType}本位\n倍数: {txtMultiples}\n止损:{txtStoplossRatio}%\n数量:{txtAmout}"
+            r = QMessageBox.question(self, '下单参数确认', tips, QMessageBox.Yes, QMessageBox.No)
+            if r == QMessageBox.No:
+                return False
+
+
+        # 安全提醒
+        if True:
+            if int(txtMultiples) >= 25:
+                r = QMessageBox.question(self, '提示', f"{int(txtMultiples)}倍杠杆是高风险交易,是否继续？", QMessageBox.Yes, QMessageBox.No)
+                if r == QMessageBox.No:
+                    return False
+            if int(txtStoplossRatio) > 50:
+                r = QMessageBox.question(self, '提示', f"{txtStoplossRatio}% 止损率过高, 当亏损超过{txtStoplossRatio}%才会出发止损, 是否继续？", QMessageBox.Yes, QMessageBox.No)
+                if r == QMessageBox.No:
+                    return False
+            if self.ui.rbtnUsdtBase.isChecked() and int(txtAmout) > 100:
+                r = QMessageBox.question(self, '提示', f"数量{txtAmout}, 较大, 是否继续？", QMessageBox.Yes, QMessageBox.No)
+                if r == QMessageBox.No:
+                    return False
 
         return True
 
