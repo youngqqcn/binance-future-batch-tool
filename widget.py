@@ -1,10 +1,11 @@
 # This Python file uses the following encoding: utf-8
 import sys
+from typing import List
 import PySide6
 
 
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
-from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel
+from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
 from PySide6.QtGui import  QStandardItem
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt
@@ -28,6 +29,14 @@ class Widget(QWidget):
         self.setWindowTitle("合约一键下单工具v1.0")
         #self.resize(800, 600)
 
+        # 初始化数据库
+        self.__initDatabase__()
+
+        # add token 输入框正则验证器
+        addTokenVal = QRegularExpressionValidator("[A-Za-z]{2,7}", self.ui.leToken)
+        self.ui.leToken.setValidator(addTokenVal)
+
+
         # multiple validator
         multipleVal = QIntValidator()
         multipleVal.setRange(1, 100)
@@ -48,6 +57,9 @@ class Widget(QWidget):
         self.ui.leAmount.setValidator(amountVal)
 
 
+        self.ui.leToken.textChanged.connect(self.autoCapitalize)
+
+
         # 开多
         self.ui.btnMakeLong.clicked.connect(self.makeLong)
 
@@ -65,11 +77,11 @@ class Widget(QWidget):
         self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
 
+
+
+
+
         self.initTargetView()
-
-
-        # 初始化数据库
-        self.__initDatabase__()
 
         pass
 
@@ -87,6 +99,10 @@ class Widget(QWidget):
         self.db.close()
 
         super().closeEvent(event)
+
+    def autoCapitalize(self, txts):
+        self.ui.leToken.setText(txts.upper())   #这是设置所有字母大写
+
 
 
     def initTargetView(self):
@@ -140,21 +156,24 @@ class Widget(QWidget):
             self.targetSelectModel.select(ModelIndex, QItemSelectionModel.Deselect)
 
 
+
     def LoadTarget(self):
         print('LoadTarget')
         #从数据库获取Target信息，类似表格表格数据
-        self.targetlist = [
-            ['AAA1', 'AAA2', 'AAA3', 'AAA4', 'AAA5', 'AAA6', 'AAA7', 'AAA8', 'AAA9', 'AAA10'],
-            ['BBB1', 'BBB2', 'BBB3', 'BBB4', 'BBB5', 'BBB6', 'BBB7', 'BBB8', 'BBB9', 'BBB10'],
-            ['CCC1', 'CCC2', 'CCC3', 'CCC4', 'CCC5', 'CCC6', 'CCC7', 'CCC8', 'CCC9', 'CCC10'],
-            ['DDD1', 'DDD2', 'DDD3', 'DDD4', 'DDD5', 'DDD6', 'DDD7', 'DDD8', 'DDD9', 'DDD10'],
-            ['EEE1', 'EEE2', 'EEE3', 'EEE4', 'EEE5', 'EEE6', 'EEE7', 'EEE8', 'EEE9', 'EEE10'],
-            ['FFF1', 'FFF2', 'FFF3', 'FFF4', 'FFF5', 'FFF6', 'FFF7', 'FFF8', 'FFF9', 'FFF10'],
-            ['GGG1', 'GGG2', 'GGG3', 'GGG4', 'GGG5', 'GGG6', 'GGG7', 'GGG8', 'GGG9', 'GGG10'],
-            ['HHH1', 'HHH2', 'HHH3', 'HHH4', 'HHH5', 'HHH6', 'HHH7', 'HHH8', 'HHH9', 'HHH10'],
-            ['III1', 'III2', 'III3', 'III4', 'III5', 'III6', 'III7', 'III8', 'III9', 'III10'],
-            ['JJJ1', 'JJJ2', 'JJJ3', 'JJJ4', 'JJJ5', 'JJJ6', 'JJJ7', 'JJJ8', 'JJJ9', 'JJJ10'],
-        ]
+        # self.targetlist = [
+        #     ['AAA1', 'AAA2', 'AAA3', 'AAA4', 'AAA5', 'AAA6', 'AAA7', 'AAA8', 'AAA9', 'AAA10'],
+        #     ['BBB1', 'BBB2', 'BBB3', 'BBB4', 'BBB5', 'BBB6', 'BBB7', 'BBB8', 'BBB9', 'BBB10'],
+        #     ['CCC1', 'CCC2', 'CCC3', 'CCC4', 'CCC5', 'CCC6', 'CCC7', 'CCC8', 'CCC9', 'CCC10'],
+        #     ['DDD1', 'DDD2', 'DDD3', 'DDD4', 'DDD5', 'DDD6', 'DDD7', 'DDD8', 'DDD9', 'DDD10'],
+        #     ['EEE1', 'EEE2', 'EEE3', 'EEE4', 'EEE5', 'EEE6', 'EEE7', 'EEE8', 'EEE9', 'EEE10'],
+        #     ['FFF1', 'FFF2', 'FFF3', 'FFF4', 'FFF5', 'FFF6', 'FFF7', 'FFF8', 'FFF9', 'FFF10'],
+        #     ['GGG1', 'GGG2', 'GGG3', 'GGG4', 'GGG5', 'GGG6', 'GGG7', 'GGG8', 'GGG9', 'GGG10'],
+        #     ['HHH1', 'HHH2', 'HHH3', 'HHH4', 'HHH5', 'HHH6', 'HHH7', 'HHH8', 'HHH9', 'HHH10'],
+        #     ['III1', 'III2', 'III3', 'III4', 'III5', 'III6', 'III7', 'III8', 'III9', 'III10'],
+        #     ['JJJ1', 'JJJ2', 'JJJ3', 'JJJ4', 'JJJ5', 'JJJ6', 'JJJ7', 'JJJ8', 'JJJ9', 'JJJ10'],
+        # ]
+        self.targetlist = self.loadTokenFromDatabase()
+        print(self.targetlist)
 
         #每次导入时将Model中的数据清除，重新初始化
         self.targetItemModel.clear()
@@ -179,19 +198,18 @@ class Widget(QWidget):
 
 
     def __initDatabase__(self):
-        db = QSqlDatabase.addDatabase('QSQLITE')#指定数据库类型
+        self.db  = QSqlDatabase.addDatabase('QSQLITE')#指定数据库类型
         #指定SQLite数据库文件名
-        db.setDatabaseName('future.db')
-        db.setUserName("futurebitcoin2023")
-        db.setPassword("makemoremoney2023")
-        if not db.open():
+        self.db.setDatabaseName('future.db')
+        self.db.setUserName("futurebitcoin2023")
+        self.db.setPassword("makemoremoney2023")
+        if not self.db.open():
             print('无法建立与数据库的连接')
             return False
 
-        self.db = db
-        if len(db.tables()) == 0:
+        if len(self.db.tables()) == 0:
             query = QSqlQuery(self.db)
-            self.sqlQuery = query
+            # self.sqlQuery = query
 
             # 创建tokenlist表
             ret = query.exec("""CREATE TABLE tb_tokenlist (
@@ -210,13 +228,46 @@ class Widget(QWidget):
         else:
             print("数据库已经存在")
 
+    def loadTokenFromDatabase(self):
+        """从数据库中加载tokenlist"""
+
+        query = QSqlQuery(self.db)
+        if not query.exec("""SELECT * from tb_tokenlist WHERE 1=1"""):
+            print("查询tb_tokenlist失败")
+
+        tokens = []
+        while query.next():
+            t = query.value("token")
+            print(t)
+            tokens.append(t)
+
+        print(tokens)
+
+        # 一维数组转 Nx10 二维数组
+        tables = []
+        row = []
+        for i in range(len(tokens)):
+            row.append(tokens[i ])
+            if i != 0 and (i % 10) == 0:
+                tables.append(row)
+                row = []
+        tables.append(row)
+        return tables
+
 
     def addToken(self):
         """添加币种"""
-        print('add token')
+        token = self.ui.leToken.text()
+        print(f'add token {token}')
 
+        query = QSqlQuery(self.db)
+        query.exec("""SELECT * from tb_tokenlist WHERE `token`='{0}'""".format(token))
+        if query.next():
+            QMessageBox.warning(self, '提示',f"{token}已经存在", QMessageBox.Yes)
+            return
 
-
+        if not query.exec("""INSERT INTO tb_tokenlist(token) VALUES('{0}')""".format(token)):
+            QMessageBox.warning(self, '错误',f"{token}添加失败", QMessageBox.Yes)
         pass
 
     def deleteToken(self):

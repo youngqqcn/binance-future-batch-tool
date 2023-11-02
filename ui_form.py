@@ -25,52 +25,6 @@ class Ui_Widget(object):
         if not Widget.objectName():
             Widget.setObjectName(u"Widget")
         Widget.resize(1570, 754)
-        self.layoutWidget = QWidget(Widget)
-        self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(90, 60, 1071, 641))
-        self.verticalLayout_4 = QVBoxLayout(self.layoutWidget)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_5 = QLabel(self.layoutWidget)
-        self.label_5.setObjectName(u"label_5")
-
-        self.horizontalLayout_4.addWidget(self.label_5)
-
-        self.leToken = QLineEdit(self.layoutWidget)
-        self.leToken.setObjectName(u"leToken")
-
-        self.horizontalLayout_4.addWidget(self.leToken)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_4)
-
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.btnDeleteToken = QPushButton(self.layoutWidget)
-        self.btnDeleteToken.setObjectName(u"btnDeleteToken")
-
-        self.horizontalLayout_5.addWidget(self.btnDeleteToken)
-
-        self.btnAddToken = QPushButton(self.layoutWidget)
-        self.btnAddToken.setObjectName(u"btnAddToken")
-
-        self.horizontalLayout_5.addWidget(self.btnAddToken)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
-
-
-        self.verticalLayout_4.addLayout(self.verticalLayout_3)
-
-        self.tableView = QTableView(self.layoutWidget)
-        self.tableView.setObjectName(u"tableView")
-
-        self.verticalLayout_4.addWidget(self.tableView)
-
         self.groupBox = QGroupBox(Widget)
         self.groupBox.setObjectName(u"groupBox")
         self.groupBox.setGeometry(QRect(1260, 50, 301, 111))
@@ -80,27 +34,27 @@ class Ui_Widget(object):
         self.groupBox_2 = QGroupBox(Widget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.groupBox_2.setGeometry(QRect(1260, 270, 301, 331))
-        self.layoutWidget1 = QWidget(self.groupBox_2)
-        self.layoutWidget1.setObjectName(u"layoutWidget1")
-        self.layoutWidget1.setGeometry(QRect(20, 40, 253, 258))
-        self.verticalLayout_2 = QVBoxLayout(self.layoutWidget1)
+        self.layoutWidget = QWidget(self.groupBox_2)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(20, 40, 253, 258))
+        self.verticalLayout_2 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_4 = QLabel(self.layoutWidget1)
+        self.label_4 = QLabel(self.layoutWidget)
         self.label_4.setObjectName(u"label_4")
 
         self.horizontalLayout_3.addWidget(self.label_4)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.rbtnUsdtBase = QRadioButton(self.layoutWidget1)
+        self.rbtnUsdtBase = QRadioButton(self.layoutWidget)
         self.rbtnUsdtBase.setObjectName(u"rbtnUsdtBase")
 
         self.horizontalLayout_2.addWidget(self.rbtnUsdtBase)
 
-        self.rbtnTokenBase = QRadioButton(self.layoutWidget1)
+        self.rbtnTokenBase = QRadioButton(self.layoutWidget)
         self.rbtnTokenBase.setObjectName(u"rbtnTokenBase")
 
         self.horizontalLayout_2.addWidget(self.rbtnTokenBase)
@@ -117,32 +71,32 @@ class Ui_Widget(object):
         self.formLayout.setObjectName(u"formLayout")
         self.formLayout.setHorizontalSpacing(10)
         self.formLayout.setVerticalSpacing(20)
-        self.label = QLabel(self.layoutWidget1)
+        self.label = QLabel(self.layoutWidget)
         self.label.setObjectName(u"label")
 
         self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
 
-        self.leMultiples = QLineEdit(self.layoutWidget1)
+        self.leMultiples = QLineEdit(self.layoutWidget)
         self.leMultiples.setObjectName(u"leMultiples")
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.leMultiples)
 
-        self.label_2 = QLabel(self.layoutWidget1)
+        self.label_2 = QLabel(self.layoutWidget)
         self.label_2.setObjectName(u"label_2")
 
         self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_2)
 
-        self.leStopLossRatio = QLineEdit(self.layoutWidget1)
+        self.leStopLossRatio = QLineEdit(self.layoutWidget)
         self.leStopLossRatio.setObjectName(u"leStopLossRatio")
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.leStopLossRatio)
 
-        self.label_3 = QLabel(self.layoutWidget1)
+        self.label_3 = QLabel(self.layoutWidget)
         self.label_3.setObjectName(u"label_3")
 
         self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_3)
 
-        self.leAmount = QLineEdit(self.layoutWidget1)
+        self.leAmount = QLineEdit(self.layoutWidget)
         self.leAmount.setObjectName(u"leAmount")
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.leAmount)
@@ -154,13 +108,13 @@ class Ui_Widget(object):
         self.horizontalLayout.setSpacing(50)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(10, 10, 10, 10)
-        self.btnMakeLong = QPushButton(self.layoutWidget1)
+        self.btnMakeLong = QPushButton(self.layoutWidget)
         self.btnMakeLong.setObjectName(u"btnMakeLong")
         self.btnMakeLong.setAutoDefault(False)
 
         self.horizontalLayout.addWidget(self.btnMakeLong)
 
-        self.btnMakeShort = QPushButton(self.layoutWidget1)
+        self.btnMakeShort = QPushButton(self.layoutWidget)
         self.btnMakeShort.setObjectName(u"btnMakeShort")
 
         self.horizontalLayout.addWidget(self.btnMakeShort)
@@ -173,6 +127,45 @@ class Ui_Widget(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
+        self.widget = QWidget(Widget)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(90, 30, 331, 91))
+        self.verticalLayout_3 = QVBoxLayout(self.widget)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.label_5 = QLabel(self.widget)
+        self.label_5.setObjectName(u"label_5")
+
+        self.horizontalLayout_4.addWidget(self.label_5)
+
+        self.leToken = QLineEdit(self.widget)
+        self.leToken.setObjectName(u"leToken")
+
+        self.horizontalLayout_4.addWidget(self.leToken)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_4)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.btnDeleteToken = QPushButton(self.widget)
+        self.btnDeleteToken.setObjectName(u"btnDeleteToken")
+
+        self.horizontalLayout_5.addWidget(self.btnDeleteToken)
+
+        self.btnAddToken = QPushButton(self.widget)
+        self.btnAddToken.setObjectName(u"btnAddToken")
+
+        self.horizontalLayout_5.addWidget(self.btnAddToken)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
+
+        self.tableView = QTableView(Widget)
+        self.tableView.setObjectName(u"tableView")
+        self.tableView.setGeometry(QRect(91, 134, 1111, 601))
 
         self.retranslateUi(Widget)
 
@@ -181,10 +174,6 @@ class Ui_Widget(object):
 
     def retranslateUi(self, Widget):
         Widget.setWindowTitle(QCoreApplication.translate("Widget", u"Widget", None))
-        self.label_5.setText(QCoreApplication.translate("Widget", u"\u5e01\u5bf9\u7ba1\u7406:", None))
-        self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
-        self.btnDeleteToken.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
-        self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))
         self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u5e73\u4ed3\u64cd\u4f5c:", None))
         self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5168\u5e73(\u9009\u4e2d)", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("Widget", u"\u5f00\u4ed3\u64cd\u4f5c:", None))
@@ -196,5 +185,9 @@ class Ui_Widget(object):
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u6570\u91cf:", None))
         self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.btnMakeShort.setText(QCoreApplication.translate("Widget", u"\u5f00\u7a7a", None))
+        self.label_5.setText(QCoreApplication.translate("Widget", u"\u5e01\u5bf9\u7ba1\u7406:", None))
+        self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
+        self.btnDeleteToken.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
+        self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))
     # retranslateUi
 
