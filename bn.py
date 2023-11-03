@@ -97,39 +97,53 @@ class  BnUmWrapper(object):
         return latestPrice
 
 
-    def createOrders(self, usdtQuantity: float, symbol: str , side: str ):
+    def createNewOrders(self, usdtQuantity: float, symbol: str , side: str, stopRatio: float, leverage: int ):
         """创建新订单"""
 
-        assert usdtQuantity > 5  , '无效参数, usdtQuantity'
-        assert side in ['BUY', 'SELL'], '无效参数 side'
-        assert  'USDT' in symbol and len(symbol) > 5 , '无效参数 symbol'
+        assert usdtQuantity > 5  , '无效参数, usdtQuantity {}'.format(usdtQuantity)
+        assert side in ['BUY', 'SELL'], '无效参数 side {}'.format(side)
+        assert  'USDT' in symbol and len(symbol) > 5 , '无效参数 symbol, {}'.format(symbol)
+        assert 0 < stopRatio < 0.9, '无效止损： {}'.format(stopRatio)
+        assert 1 <= leverage <= 90 , '无效杠杆倍数: {}'.format(leverage)
 
         try:
             latestPrice = self.getLatestPrice(symbol=symbol)
 
             qp, pp = self.getPrecision(symbol=symbol)
+
+            # 下单的数量，币的数量
             tokenQuantity = usdtQuantity/latestPrice
-
             quantity = f"%.{qp}f"%tokenQuantity
+            logging.info('quantity=====>{}'.format( quantity))
 
-            stopPrice = f"%.{pp}f"%(latestPrice * (1 - 0.05)) # 要乘以杠杆倍数
+            # 止损市价单的触发价格
+            stopPrice = latestPrice
+            if side == 'BUY':   # 开多
+                stopPrice = latestPrice * (1 - stopRatio/leverage)
+            else: # SELL  开空
+                stopPrice = latestPrice * (1 + stopRatio/leverage)
+            stopPrice = f"%.{pp}f"%stopPrice # 要乘以杠杆倍数
+
             logging.info("stopPrice ===> {}".format(stopPrice))
-            logging.info( 'tokenQuantity============>{}'.format( tokenQuantity))
 
+
+            # 止损方向
+            stopSide = 'SELL' if side == 'BUY' else 'BUY'
+            assert stopSide != side
 
             orders = [
                 # 市价下单
                 {
-                    "symbol":   "RENUSDT",
-                    "side":     "BUY",   # BUY:买入开多，SELL:卖出开空
+                    "symbol":   symbol,
+                    "side":     side,   # BUY:买入开多，SELL:卖出开空
                     "type":     "MARKET", # MARKET 市价单
                     "quantity": quantity,  # 币的数量
                 },
 
                 # 市价止损单
                 {
-                    "symbol":           "RENUSDT",
-                    "side":             "SELL",
+                    "symbol":           symbol,
+                    "side":             stopSide,
                     "type":             "STOP_MARKET", # STOP_MARKET 市价止盈/损单
                     "stopPrice":        stopPrice,  # 触发价格
                     "closePosition":    "true",  # 触发后，全部平仓
@@ -148,6 +162,43 @@ class  BnUmWrapper(object):
         pass
 
 
+    def getCurrentPosition(self):
+        """获取当前仓位信息"""
+
+        ret = self.um_futures_client.account()
+        poss = []
+        for x in ret['positions']:
+            # positionAmt 小于0则是空单; 大于0是多单
+            if float(x['positionAmt']) != 0:
+                x['side'] = 'SELL' if float(x['positionAmt']) < 0 else 'BUY'   # SELL:空单 ， BUY: 多单
+                poss.append(x)
+        return poss
+
+    def getOpenOrders(self):
+        """获取当前所有委托单"""
+        ret = self.um_futures_client.get_orders()
+        return ret
+
+
+
+    def cancelAllOrders(self, symbol: str):
+        """撤销所有委托单"""
+        ret = self.um_futures_client.cancel_open_orders(symbol=symbol)
+
+
+
+
+    def closeAllPositionMarket(self, symbol: str):
+        """市价全部平仓"""
+
+        # 获取当前所有仓位
+        positions = self.getCurrentPosition()
+
+
+
+        pass
+
+
 
 def main():
 
@@ -155,7 +206,11 @@ def main():
     secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
     bn =  BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
 
-    print( bn.getAccountBalance(symbol='USDT') )
+    # print( bn.getAccountBalance(symbol='USDT') )
+    print('==================')
+    # pprint(bn.createNewOrders(5.5, 'RENUSDT', 'SELL', 0.05, 2))
+    pprint(bn.getCurrentPosition())
+    # pprint(bn.getOpenOrders())
     pass
 
 if __name__ == '__main__':

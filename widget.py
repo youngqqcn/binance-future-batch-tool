@@ -340,11 +340,11 @@ class Widget(QWidget):
 
         # 安全提醒
         if True:
-            if int(txtMultiples) >= 25:
+            if int(txtMultiples) >= 10:
                 r = QMessageBox.question(self, '提示', f"{int(txtMultiples)}倍杠杆是高风险交易,是否继续？", QMessageBox.Yes, QMessageBox.No)
                 if r == QMessageBox.No:
                     return False
-            if int(txtStoplossRatio) > 50:
+            if int(txtStoplossRatio) > 10:
                 r = QMessageBox.question(self, '提示', f"{txtStoplossRatio}% 止损率过高, 当亏损超过{txtStoplossRatio}%才会出发止损, 是否继续？", QMessageBox.Yes, QMessageBox.No)
                 if r == QMessageBox.No:
                     return False
