@@ -4,13 +4,13 @@
 
 from pprint import pprint
 from binance.spot import Spot
-from binance.cm_futures import CMFutures
+# from binance.cm_futures import CMFutures
 import logging
 from binance.um_futures import UMFutures
 from binance.lib.utils import config_logging
 from binance.error import ClientError
 
-config_logging(logging, logging.DEBUG)
+config_logging(logging, logging.INFO)
 
 
 class  BnUmWrapper(object):

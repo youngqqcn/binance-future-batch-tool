@@ -19,6 +19,8 @@ from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from ui_form import Ui_Widget
 
 
+from bnwrapper.bn import BnUmWrapper
+
 
 class Widget(QWidget):
     def __init__(self, parent=None):
@@ -32,6 +34,11 @@ class Widget(QWidget):
 
         # 初始化数据库
         self.__initDatabase__()
+
+
+        apiKey = '8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V'
+        secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
+        self.bnUmWrapper = BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
 
         # add token 输入框正则验证器
         addTokenVal = QRegularExpressionValidator("[A-Za-z]{2,7}", self.ui.leToken)
@@ -200,8 +207,7 @@ class Widget(QWidget):
         self.db.setUserName("futurebitcoin2023")
         self.db.setPassword("makemoremoney2023")
         if not self.db.open():
-            print('无法建立与数据库的连接')
-            return False
+            raise Exception('无法建立与数据库的连接')
 
         if len(self.db.tables()) == 0:
             query = QSqlQuery(self.db)
@@ -212,15 +218,8 @@ class Widget(QWidget):
                 token VARCHAR(10) PRIMARY KEY
             )""")
             if False == ret:
-                print("创建表失败")
-
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('AAAA')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('BBBB')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('CCCC')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('DDDD')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('EEEE')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('FFFF')""")
-            query.exec("""INSERT INTO tb_tokenlist(token) VALUES('GGGG')""")
+                raise Exception("创建表失败")
+            print('数据库创建成功')
         else:
             print("数据库已经存在")
 
@@ -355,25 +354,46 @@ class Widget(QWidget):
 
         return True
 
+    def getSelectedSymbols(self):
+         # 获取下单
+        symbols = []
+        for row in range(self.targetItemModel.rowCount()):
+            for col in range(self.targetItemModel.columnCount()):
+                item  = self.targetItemModel.item(row, col)
+                if item.checkState() == Qt.CheckState.Checked:
+                    token = item.text() + 'USDT'
+                    symbols.append( token.upper() )
+        return symbols
+
     def makeLong(self ):
         """
         市价开多
         """
         print("makeLong")
+        self.__makeOrder(side='BUY')
 
-        if not self.checkOrderData():
-            return
-        print('============> 开多成功')
 
     def makeShort(self):
         """
         市价开空
         """
         print("makeShort")
-        if not self.checkOrderData():
-            return
-        print('============> 开空成功')
+        self.__makeOrder(side='SELL')
 
+
+    def __makeOrder(self, side: str):
+
+        assert side in ['BUY', 'SELL']
+
+        # if not self.checkOrderData():
+        #     return
+
+        # usdtAmount = float(self.ui.leAmount.text())
+        # self.bnUmWrapper.createNewOrders(usdtQuantity=usdtAmount, )
+
+        print(self.getSelectedSymbols())
+
+        pass
 
 
 
