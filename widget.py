@@ -110,9 +110,7 @@ class Widget(QWidget):
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
         positions = self.bnUmWrapper.getCurrentPosition()
-        if len(positions) == 0:
-            QMessageBox.information(self, '提示', f"当前仓位为空", QMessageBox.Yes)
-            return
+
 
         # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
         headers = ['交易对', '保证金模式', '方向', '杠杆倍数', '数量', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)']
@@ -158,6 +156,9 @@ class Widget(QWidget):
         self.ui.tableViewCurPositions.show()
 
 
+        if len(positions) == 0:
+            QMessageBox.information(self, '提示', f"当前仓位为空", QMessageBox.Yes)
+            return
 
         pass
 
