@@ -36,10 +36,14 @@ class Widget(QWidget):
         # 初始化数据库
         self.__initDatabase__()
 
+        self.bnUmWrapper = None
 
-        apiKey = '8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V'
-        secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
-        self.bnUmWrapper = BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
+        apiKey, secretKey = self.loadApiKey()
+        if len(apiKey) == 64 or len(secretKey) == 64:
+            self.bnUmWrapper = BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
+
+        # apiKey = '8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V'
+        # secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
 
 
         # 禁用币本位
@@ -92,7 +96,75 @@ class Widget(QWidget):
 
         self.initTargetView()
 
+        #  密钥添加
+        self.ui.btnSaveApiKeySecret.clicked.connect(self.saveApiKeySecret)
+
+        # self.ui.btnTestApiKey.clicked.connect(self.testApiKey)
+
         pass
+
+    def saveApiKeySecret(self):
+        """保存密钥信息"""
+        if not self.testApiKey():
+            return
+
+        ak  = self.ui.leApiKey.text()
+        sk = self.ui.leSecretKey.text()
+
+        query = QSqlQuery(self.db)
+        query.exec("""DELETE from tb_account WHERE tag='default'""")
+
+        self.bnUmWrapper = BnUmWrapper(apiKey=ak, secretKey=sk)
+
+        ak = ak[-37:] + ak[:-37]
+        sk = sk[-27:] + sk[:-27]
+        if query.exec("""INSERT INTO tb_account(tag, ak, sk) VALUES('default','{0}','{1}')""".format(ak, sk)):
+            QMessageBox.information(self, '提示', f"操作成功", QMessageBox.Yes)
+            self.ui.leApiKey.setText('')
+            self.ui.leSecretKey.setText('')
+            return
+        QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
+
+    def testApiKey(self):
+        """测试api密钥是否可用"""
+        apikey  = self.ui.leApiKey.text()
+        apiSecret = self.ui.leSecretKey.text()
+
+        if not len(apikey) == 64:
+            QMessageBox.warning(self, '提示', f"API密钥长度不为64, 请检查", QMessageBox.Yes)
+            return True
+        if not len(apiSecret) == 64:
+            QMessageBox.warning(self, '提示', f"密钥长度不为64,请检查", QMessageBox.Yes)
+            return False
+        tmpBnUmWrapper = BnUmWrapper(apiKey=apikey, secretKey=apiSecret)
+
+        try:
+            tmpBnUmWrapper.getTokenBalance('USDT')
+            return True
+        except ClientError as error:
+            logging.error("error_code: {}, error_msg:{}".format(error.error_code, error.error_message))
+            QMessageBox.warning(self, '提示', "测试失败, 错误码:{} 错误信息: {}".format(error.error_code, error.error_message), QMessageBox.Yes)
+            return False
+
+    def loadApiKey(self):
+        """加载apikey"""
+        query = QSqlQuery(self.db)
+        if not query.exec("""SELECT * from tb_account WHERE tag='default'"""):
+            print("查询tb_tokenlist失败")
+            raise Exception('查询tb_tokenlist失败')
+        if query.next():
+            ak = query.value("ak")
+            sk = query.value("sk")
+
+            if len(ak) == 64 and len(sk) == 64:
+                ak = ak[37:] + ak[:37]
+                sk = sk[27:] + sk[:27]
+                print(ak)
+                print(sk)
+                return ak, sk
+        else:
+            return '', ''
+
 
     def closeEvent(self,event):
         """重载窗口关闭事件， 关闭数据库"""
@@ -223,7 +295,16 @@ class Widget(QWidget):
                 token VARCHAR(10) PRIMARY KEY
             )""")
             if False == ret:
+                raise Exception("创建表tb_tokenlist失败")
+
+            ret = query.exec("""CREATE TABLE tb_account(
+                tag VARCHAR(10) PRIMARY KEY,
+                ak VARCHAR(100),
+                sk VARCHAR(100)
+            )""")
+            if False == ret:
                 raise Exception("创建表失败")
+
             print('数据库创建成功')
         else:
             print("数据库已经存在")
@@ -258,6 +339,10 @@ class Widget(QWidget):
 
     def addToken(self):
         """添加币种"""
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            return
+
         token = self.ui.leToken.text()
 
         found = False
@@ -290,6 +375,9 @@ class Widget(QWidget):
     def deleteToken(self):
         """删除币种"""
         print('delete token')
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            return
 
         token = self.ui.leToken.text()
         print(f'delete token {token}')
@@ -309,6 +397,9 @@ class Widget(QWidget):
 
     def checkOrderData(self):
         """检查订单参数"""
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            return
 
         # 是否选择了币种
         symbols = self.getSelectedSymbols()
@@ -462,6 +553,9 @@ class Widget(QWidget):
 
     def closePosition(self):
         """市价平仓"""
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            return
 
         reply = QMessageBox.question(self, '提示', f"所有币种按照市价平仓，并且撤销所有委托单，是否继续？", QMessageBox.Yes, QMessageBox.No)
         if reply != QMessageBox.Yes:

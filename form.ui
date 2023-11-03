@@ -13,252 +13,349 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
+  <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>1070</x>
-     <y>150</y>
-     <width>301</width>
-     <height>131</height>
+     <x>0</x>
+     <y>10</y>
+     <width>1361</width>
+     <height>721</height>
     </rect>
    </property>
-   <property name="title">
-    <string>订单操作:</string>
+   <property name="currentIndex">
+    <number>1</number>
    </property>
-   <widget class="QPushButton" name="btnClosePosition">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>141</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>一键全部平仓</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_2">
-   <property name="geometry">
-    <rect>
-     <x>1070</x>
-     <y>310</y>
-     <width>301</width>
-     <height>331</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>市价开仓操作:</string>
-   </property>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>253</width>
-      <height>258</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>建仓</string>
+    </attribute>
+    <widget class="QTableView" name="tableView">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>1011</width>
+       <height>651</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="geometry">
+      <rect>
+       <x>1030</x>
+       <y>230</y>
+       <width>301</width>
+       <height>321</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>市价开仓操作:</string>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>40</y>
+        <width>253</width>
+        <height>258</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="label_4">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>类型:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QRadioButton" name="rbtnUsdtBase">
+             <property name="text">
+              <string>U本位</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbtnTokenBase">
+             <property name="text">
+              <string>币本位</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QFormLayout" name="formLayout">
+           <property name="horizontalSpacing">
+            <number>10</number>
+           </property>
+           <property name="verticalSpacing">
+            <number>20</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>倍数:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="leLeverage">
+             <property name="placeholderText">
+              <string>杠杆倍数</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>止损:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="leStopLossRatio">
+             <property name="placeholderText">
+              <string>能承受亏损的百分比</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>数量:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="leAmount">
+             <property name="placeholderText">
+              <string>U的数量,必须大于6</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,10">
+           <property name="spacing">
+            <number>50</number>
+           </property>
+           <property name="leftMargin">
+            <number>10</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="rightMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="btnMakeLong">
+             <property name="text">
+              <string>开多</string>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnMakeShort">
+             <property name="text">
+              <string>开空</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="geometry">
+      <rect>
+       <x>1040</x>
+       <y>40</y>
+       <width>301</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>币种管理:</string>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>80</y>
+        <width>241</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QPushButton" name="btnDeleteToken">
          <property name="text">
-          <string>类型:</string>
+          <string>删除</string>
          </property>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QRadioButton" name="rbtnUsdtBase">
-           <property name="text">
-            <string>U本位</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbtnTokenBase">
-           <property name="text">
-            <string>币本位</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QPushButton" name="btnAddToken">
+         <property name="text">
+          <string>添加</string>
+         </property>
+        </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>191</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <layout class="QFormLayout" name="formLayout">
-         <property name="horizontalSpacing">
-          <number>10</number>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>币名:</string>
          </property>
-         <property name="verticalSpacing">
-          <number>20</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>倍数:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="leLeverage">
-           <property name="placeholderText">
-            <string>杠杆倍数</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>止损:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="leStopLossRatio">
-           <property name="placeholderText">
-            <string>能承受亏损的百分比</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>数量:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="leAmount">
-           <property name="placeholderText">
-            <string>U的数量,必须大于6</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,10">
-         <property name="spacing">
-          <number>50</number>
+        <widget class="QLineEdit" name="leToken">
+         <property name="placeholderText">
+          <string>输入币名...</string>
          </property>
-         <property name="leftMargin">
-          <number>10</number>
-         </property>
-         <property name="topMargin">
-          <number>10</number>
-         </property>
-         <property name="rightMargin">
-          <number>10</number>
-         </property>
-         <property name="bottomMargin">
-          <number>10</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="btnMakeLong">
-           <property name="text">
-            <string>开多</string>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnMakeShort">
-           <property name="text">
-            <string>开空</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        </widget>
        </item>
       </layout>
-     </item>
-    </layout>
+     </widget>
+    </widget>
    </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_3">
-   <property name="geometry">
-    <rect>
-     <x>1070</x>
-     <y>10</y>
-     <width>301</width>
-     <height>121</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>币种管理:</string>
-   </property>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>241</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QPushButton" name="btnDeleteToken">
-       <property name="text">
-        <string>删除</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnAddToken">
-       <property name="text">
-        <string>添加</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>仓位管理</string>
+    </attribute>
+    <widget class="QTableView" name="tableView_2">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>30</y>
+       <width>1051</width>
+       <height>621</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnGetCurrentPosition">
+     <property name="geometry">
+      <rect>
+       <x>1150</x>
+       <y>170</y>
+       <width>151</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>获取当前所有仓位</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnClosePosition">
+     <property name="geometry">
+      <rect>
+       <x>1150</x>
+       <y>270</y>
+       <width>161</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>一键全部平仓</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>191</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>币名:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="leToken">
-       <property name="placeholderText">
-        <string>输入币名...</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <widget class="QWidget" name="tab_3">
+    <attribute name="title">
+     <string>密钥管理</string>
+    </attribute>
+    <widget class="QLineEdit" name="leApiKey">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>190</y>
+       <width>681</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>200</y>
+       <width>66</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>API 密钥:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="leSecretKey">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>280</y>
+       <width>681</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>290</y>
+       <width>66</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>密钥：</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSaveApiKeySecret">
+     <property name="geometry">
+      <rect>
+       <x>800</x>
+       <y>410</y>
+       <width>181</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>保存配置</string>
+     </property>
+    </widget>
    </widget>
-  </widget>
-  <widget class="QTableView" name="tableView">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>1021</width>
-     <height>731</height>
-    </rect>
-   </property>
   </widget>
  </widget>
  <resources/>

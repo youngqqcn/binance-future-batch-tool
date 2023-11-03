@@ -17,23 +17,25 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFormLayout, QGroupBox, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QPushButton,
-    QRadioButton, QSizePolicy, QTableView, QVBoxLayout,
-    QWidget)
+    QRadioButton, QSizePolicy, QTabWidget, QTableView,
+    QVBoxLayout, QWidget)
 
 class Ui_Widget(object):
     def setupUi(self, Widget):
         if not Widget.objectName():
             Widget.setObjectName(u"Widget")
         Widget.resize(1394, 754)
-        self.groupBox = QGroupBox(Widget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(1070, 150, 301, 131))
-        self.btnClosePosition = QPushButton(self.groupBox)
-        self.btnClosePosition.setObjectName(u"btnClosePosition")
-        self.btnClosePosition.setGeometry(QRect(20, 50, 141, 41))
-        self.groupBox_2 = QGroupBox(Widget)
+        self.tabWidget = QTabWidget(Widget)
+        self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setGeometry(QRect(0, 10, 1361, 721))
+        self.tab = QWidget()
+        self.tab.setObjectName(u"tab")
+        self.tableView = QTableView(self.tab)
+        self.tableView.setObjectName(u"tableView")
+        self.tableView.setGeometry(QRect(10, 10, 1011, 651))
+        self.groupBox_2 = QGroupBox(self.tab)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(1070, 310, 301, 331))
+        self.groupBox_2.setGeometry(QRect(1030, 230, 301, 321))
         self.layoutWidget = QWidget(self.groupBox_2)
         self.layoutWidget.setObjectName(u"layoutWidget")
         self.layoutWidget.setGeometry(QRect(20, 40, 253, 258))
@@ -127,9 +129,9 @@ class Ui_Widget(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
-        self.groupBox_3 = QGroupBox(Widget)
+        self.groupBox_3 = QGroupBox(self.tab)
         self.groupBox_3.setObjectName(u"groupBox_3")
-        self.groupBox_3.setGeometry(QRect(1070, 10, 301, 121))
+        self.groupBox_3.setGeometry(QRect(1040, 40, 301, 121))
         self.layoutWidget1 = QWidget(self.groupBox_3)
         self.layoutWidget1.setObjectName(u"layoutWidget1")
         self.layoutWidget1.setGeometry(QRect(10, 80, 241, 41))
@@ -162,19 +164,48 @@ class Ui_Widget(object):
 
         self.horizontalLayout_4.addWidget(self.leToken)
 
-        self.tableView = QTableView(Widget)
-        self.tableView.setObjectName(u"tableView")
-        self.tableView.setGeometry(QRect(10, 10, 1021, 731))
+        self.tabWidget.addTab(self.tab, "")
+        self.tab_2 = QWidget()
+        self.tab_2.setObjectName(u"tab_2")
+        self.tableView_2 = QTableView(self.tab_2)
+        self.tableView_2.setObjectName(u"tableView_2")
+        self.tableView_2.setGeometry(QRect(50, 30, 1051, 621))
+        self.btnGetCurrentPosition = QPushButton(self.tab_2)
+        self.btnGetCurrentPosition.setObjectName(u"btnGetCurrentPosition")
+        self.btnGetCurrentPosition.setGeometry(QRect(1150, 170, 151, 61))
+        self.btnClosePosition = QPushButton(self.tab_2)
+        self.btnClosePosition.setObjectName(u"btnClosePosition")
+        self.btnClosePosition.setGeometry(QRect(1150, 270, 161, 61))
+        self.tabWidget.addTab(self.tab_2, "")
+        self.tab_3 = QWidget()
+        self.tab_3.setObjectName(u"tab_3")
+        self.leApiKey = QLineEdit(self.tab_3)
+        self.leApiKey.setObjectName(u"leApiKey")
+        self.leApiKey.setGeometry(QRect(300, 190, 681, 41))
+        self.label_6 = QLabel(self.tab_3)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setGeometry(QRect(210, 200, 66, 17))
+        self.leSecretKey = QLineEdit(self.tab_3)
+        self.leSecretKey.setObjectName(u"leSecretKey")
+        self.leSecretKey.setGeometry(QRect(300, 280, 681, 41))
+        self.label_7 = QLabel(self.tab_3)
+        self.label_7.setObjectName(u"label_7")
+        self.label_7.setGeometry(QRect(230, 290, 66, 17))
+        self.btnSaveApiKeySecret = QPushButton(self.tab_3)
+        self.btnSaveApiKeySecret.setObjectName(u"btnSaveApiKeySecret")
+        self.btnSaveApiKeySecret.setGeometry(QRect(800, 410, 181, 61))
+        self.tabWidget.addTab(self.tab_3, "")
 
         self.retranslateUi(Widget)
+
+        self.tabWidget.setCurrentIndex(1)
+
 
         QMetaObject.connectSlotsByName(Widget)
     # setupUi
 
     def retranslateUi(self, Widget):
         Widget.setWindowTitle(QCoreApplication.translate("Widget", u"Widget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u8ba2\u5355\u64cd\u4f5c:", None))
-        self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u4e00\u952e\u5168\u90e8\u5e73\u4ed3", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5f00\u4ed3\u64cd\u4f5c:", None))
         self.label_4.setText(QCoreApplication.translate("Widget", u"\u7c7b\u578b:", None))
         self.rbtnUsdtBase.setText(QCoreApplication.translate("Widget", u"U\u672c\u4f4d", None))
@@ -192,5 +223,13 @@ class Ui_Widget(object):
         self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))
         self.label_5.setText(QCoreApplication.translate("Widget", u"\u5e01\u540d:", None))
         self.leToken.setPlaceholderText(QCoreApplication.translate("Widget", u"\u8f93\u5165\u5e01\u540d...", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Widget", u"\u5efa\u4ed3", None))
+        self.btnGetCurrentPosition.setText(QCoreApplication.translate("Widget", u"\u83b7\u53d6\u5f53\u524d\u6240\u6709\u4ed3\u4f4d", None))
+        self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u4e00\u952e\u5168\u90e8\u5e73\u4ed3", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("Widget", u"\u4ed3\u4f4d\u7ba1\u7406", None))
+        self.label_6.setText(QCoreApplication.translate("Widget", u"API \u5bc6\u94a5:", None))
+        self.label_7.setText(QCoreApplication.translate("Widget", u"\u5bc6\u94a5\uff1a", None))
+        self.btnSaveApiKeySecret.setText(QCoreApplication.translate("Widget", u"\u4fdd\u5b58\u914d\u7f6e", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("Widget", u"\u5bc6\u94a5\u7ba1\u7406", None))
     # retranslateUi
 
