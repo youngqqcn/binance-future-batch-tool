@@ -70,7 +70,7 @@ class  BnUmWrapper(object):
         for x in ret:
             if x['asset'] == token:
                 return float(x['balance'])
-        pass
+        return 0
 
     def getPrecision(self, symbol):
         """获取精度, 返回数量精度，价格精度"""
@@ -133,63 +133,57 @@ class  BnUmWrapper(object):
         assert 0 < stopRatio < 0.9, '无效止损： {}'.format(stopRatio)
         assert 1 <= leverage <= 90 , '无效杠杆倍数: {}'.format(leverage)
 
-        try:
-            # 调整杠杆倍数
-            self.changeLeverage(symbol=symbol, leverage=leverage)
+        # 调整杠杆倍数
+        self.changeLeverage(symbol=symbol, leverage=leverage)
 
-            latestPrice = self.getLatestPrice(symbol=symbol)
+        latestPrice = self.getLatestPrice(symbol=symbol)
 
-            qp, pp = self.getPrecision(symbol=symbol)
+        qp, pp = self.getPrecision(symbol=symbol)
 
-            # 下单的数量，币的数量
-            tokenQuantity = usdtQuantity/latestPrice
-            quantity = f"%.{qp}f"%tokenQuantity
-            logging.info('quantity=====>{}'.format( quantity))
+        # 下单的数量，币的数量
+        tokenQuantity = usdtQuantity/latestPrice
+        quantity = f"%.{qp}f"%tokenQuantity
+        logging.info('quantity=====>{}'.format( quantity))
 
-            # 止损市价单的触发价格
-            stopPrice = latestPrice
-            if side == 'BUY':   # 开多
-                stopPrice = latestPrice * (1 - stopRatio/leverage)
-            else: # SELL  开空
-                stopPrice = latestPrice * (1 + stopRatio/leverage)
-            stopPrice = f"%.{pp}f"%stopPrice # 要乘以杠杆倍数
+        # 止损市价单的触发价格
+        stopPrice = latestPrice
+        if side == 'BUY':   # 开多
+            stopPrice = latestPrice * (1 - stopRatio/leverage)
+        else: # SELL  开空
+            stopPrice = latestPrice * (1 + stopRatio/leverage)
+        stopPrice = f"%.{pp}f"%stopPrice # 要乘以杠杆倍数
 
-            logging.info("stopPrice ===> {}".format(stopPrice))
+        logging.info("stopPrice ===> {}".format(stopPrice))
 
 
-            # 止损方向
-            stopSide = 'SELL' if side == 'BUY' else 'BUY'
-            assert stopSide != side
+        # 止损方向
+        stopSide = 'SELL' if side == 'BUY' else 'BUY'
+        assert stopSide != side
 
-            orders = [
-                # 市价下单
-                {
-                    "symbol":   symbol,
-                    "side":     side,   # BUY:买入开多，SELL:卖出开空
-                    "type":     "MARKET", # MARKET 市价单
-                    "quantity": quantity,  # 币的数量
-                },
+        orders = [
+            # 市价下单
+            {
+                "symbol":   symbol,
+                "side":     side,   # BUY:买入开多，SELL:卖出开空
+                "type":     "MARKET", # MARKET 市价单
+                "quantity": quantity,  # 币的数量
+            },
 
-                # 市价止损单
-                {
-                    "symbol":           symbol,
-                    "side":             stopSide,
-                    "type":             "STOP_MARKET", # STOP_MARKET 市价止盈/损单
-                    "stopPrice":        stopPrice,  # 触发价格
-                    "closePosition":    "true",  # 触发后，全部平仓
-                    "workingType":      "MARK_PRICE" # 按标记价格止损
-                },
-            ]
+            # 市价止损单
+            {
+                "symbol":           symbol,
+                "side":             stopSide,
+                "type":             "STOP_MARKET", # STOP_MARKET 市价止盈/损单
+                "stopPrice":        stopPrice,  # 触发价格
+                "closePosition":    "true",  # 触发后，全部平仓
+                "workingType":      "MARK_PRICE" # 按标记价格止损
+            },
+        ]
 
-            response = self.um_futures_client.new_batch_order(batchOrders=orders)
-            logging.info(response)
-        except ClientError as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message
-                )
-            )
-        pass
+        response = self.um_futures_client.new_batch_order(batchOrders=orders)
+        logging.info(response)
+
+
 
 
     def closeAllPositionMarket(self):
@@ -202,6 +196,9 @@ class  BnUmWrapper(object):
         closePositionsOrders = []
         # 获取当前所有仓位
         positions = self.getCurrentPosition()
+        if len(positions) == 0:
+            return
+        logging.info('当前仓位:{}'.format(positions))
         for pos in positions:
             closeSide = 'BUY' if pos['side'] == 'SELL' else 'BUY'
 

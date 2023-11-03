@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+import logging
 import sys
 from typing import List
 import PySide6
@@ -20,7 +21,7 @@ from ui_form import Ui_Widget
 
 
 from bnwrapper.bn import BnUmWrapper
-
+from binance.error import ClientError
 
 class Widget(QWidget):
     def __init__(self, parent=None):
@@ -46,9 +47,9 @@ class Widget(QWidget):
 
 
         # multiple validator
-        multipleVal = QIntValidator()
-        multipleVal.setRange(1, 100)
-        self.ui.leMultiples.setValidator(multipleVal)
+        leverageVal = QIntValidator()
+        leverageVal.setRange(1, 99)
+        self.ui.leLeverage.setValidator(leverageVal)
 
 
         # stop loss validator
@@ -295,6 +296,15 @@ class Widget(QWidget):
     def checkOrderData(self):
         """检查订单参数"""
 
+        # 是否选择了币种
+        symbols = self.getSelectedSymbols()
+        print(symbols)
+        if len(symbols) == 0:
+            print("请选择币种")
+            QMessageBox.question(self, '提示', f"请选择币种", QMessageBox.Yes)
+            return False
+
+
         # 有效性检查:
         txType = ''
         if self.ui.rbtnUsdtBase.isChecked():
@@ -306,9 +316,9 @@ class Widget(QWidget):
             QMessageBox.question(self, '提示', f"请选择'类型'", QMessageBox.Yes)
             return False
 
-        # 检查倍数
-        txtMultiples = self.ui.leMultiples.text()
-        if len(txtMultiples) == 0:
+        # 检查杠杆倍数
+        txtLeverage = self.ui.leLeverage.text()
+        if len(txtLeverage) == 0:
             QMessageBox.question(self, '提示', f"请输入'倍数'", QMessageBox.Yes)
             return False
 
@@ -331,16 +341,25 @@ class Widget(QWidget):
 
         # 下单数据确认
         if True:
-            tips = f"\n类型: {txType}本位\n倍数: {txtMultiples}\n止损:{txtStoplossRatio}%\n数量:{txtAmout}"
+            tips = f"\n一共{len(symbols)}个币种\n类型: {txType}本位\n倍数: {txtLeverage}\n止损:{txtStoplossRatio}%\n数量:{txtAmout}"
             r = QMessageBox.question(self, '下单参数确认', tips, QMessageBox.Yes, QMessageBox.No)
             if r == QMessageBox.No:
                 return False
 
 
-        # 安全提醒
+        # 检查账户余额
         if True:
-            if int(txtMultiples) >= 10:
-                r = QMessageBox.question(self, '提示', f"{int(txtMultiples)}倍杠杆是高风险交易,是否继续？", QMessageBox.Yes, QMessageBox.No)
+            usdtAmount = float(self.ui.leAmount.text())
+            totalBalance = len(symbols) * usdtAmount
+            usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
+            if totalBalance - usdtBalance  < 0.1 * len(symbols):
+                QMessageBox.question(self, '提示', f"当前账户可用USDT余额{usdtBalance}不足, 请充值后重试!", QMessageBox.Yes)
+                return False
+
+        # 风险提醒
+        if True:
+            if int(txtLeverage) >= 10:
+                r = QMessageBox.question(self, '提示', f"{int(txtLeverage)}倍杠杆是高风险交易,是否继续？", QMessageBox.Yes, QMessageBox.No)
                 if r == QMessageBox.No:
                     return False
             if int(txtStoplossRatio) > 10:
@@ -385,22 +404,59 @@ class Widget(QWidget):
 
         assert side in ['BUY', 'SELL']
 
-        # if not self.checkOrderData():
-        #     return
+        if not self.checkOrderData():
+            return
 
-        # usdtAmount = float(self.ui.leAmount.text())
-        # self.bnUmWrapper.createNewOrders(usdtQuantity=usdtAmount, )
+        symbols = self.getSelectedSymbols()
 
-        print(self.getSelectedSymbols())
+        usdtAmount = float(self.ui.leAmount.text())
+        stopRatio = float(self.ui.leStopLossRatio.text())
+        leverage = int(self.ui.leLeverage)
 
-        pass
+
+        # 检查账户余额
+        totalBalance = len(symbols) * usdtAmount
+        usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
+        if totalBalance - usdtBalance  < 0.1 * len(symbols):
+            return
+
+        for symbol in symbols:
+            try:
+                self.bnUmWrapper.createNewOrders(
+                        usdtQuantity=usdtAmount,
+                        symbol=symbol,
+                        side=side,
+                        stopRatio=stopRatio,
+                        leverage=leverage
+                    )
+            except ClientError as error:
+                logging.error("Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message))
+                QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+                return
+        return
+
 
 
 
     def closePosition(self):
         """市价平仓"""
-        print("close position all selected p")
-        pass
+
+        reply = QMessageBox.question(self, '提示', f"所有币种按照市价平仓，并且撤销所有委托单，是否继续？", QMessageBox.Yes, QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return
+
+        print("市价全平，并撤销所有委托单")
+        try:
+            self.bnUmWrapper.closeAllPositionMarket()
+            # self.bnUmWrapper.cancelAllOrders()
+        except ClientError as error:
+            logging.error("Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message))
+            QMessageBox.critical(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+            return
+
+        QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
 
 
 

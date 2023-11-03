@@ -27,13 +27,13 @@ class Ui_Widget(object):
         Widget.resize(1394, 754)
         self.groupBox = QGroupBox(Widget)
         self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(1070, 140, 301, 111))
+        self.groupBox.setGeometry(QRect(1070, 150, 301, 131))
         self.btnClosePosition = QPushButton(self.groupBox)
         self.btnClosePosition.setObjectName(u"btnClosePosition")
-        self.btnClosePosition.setGeometry(QRect(50, 50, 171, 41))
+        self.btnClosePosition.setGeometry(QRect(20, 50, 141, 41))
         self.groupBox_2 = QGroupBox(Widget)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(1070, 270, 301, 331))
+        self.groupBox_2.setGeometry(QRect(1070, 310, 301, 331))
         self.layoutWidget = QWidget(self.groupBox_2)
         self.layoutWidget.setObjectName(u"layoutWidget")
         self.layoutWidget.setGeometry(QRect(20, 40, 253, 258))
@@ -76,10 +76,10 @@ class Ui_Widget(object):
 
         self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
 
-        self.leMultiples = QLineEdit(self.layoutWidget)
-        self.leMultiples.setObjectName(u"leMultiples")
+        self.leLeverage = QLineEdit(self.layoutWidget)
+        self.leLeverage.setObjectName(u"leLeverage")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.leMultiples)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.leLeverage)
 
         self.label_2 = QLabel(self.layoutWidget)
         self.label_2.setObjectName(u"label_2")
@@ -173,14 +173,14 @@ class Ui_Widget(object):
 
     def retranslateUi(self, Widget):
         Widget.setWindowTitle(QCoreApplication.translate("Widget", u"Widget", None))
-        self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5e73\u4ed3\u64cd\u4f5c:", None))
-        self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5168\u5e73(\u9009\u4e2d)", None))
+        self.groupBox.setTitle(QCoreApplication.translate("Widget", u"\u8ba2\u5355\u64cd\u4f5c:", None))
+        self.btnClosePosition.setText(QCoreApplication.translate("Widget", u"\u4e00\u952e\u5168\u90e8\u5e73\u4ed3", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("Widget", u"\u5e02\u4ef7\u5f00\u4ed3\u64cd\u4f5c:", None))
         self.label_4.setText(QCoreApplication.translate("Widget", u"\u7c7b\u578b:", None))
         self.rbtnUsdtBase.setText(QCoreApplication.translate("Widget", u"U\u672c\u4f4d", None))
         self.rbtnTokenBase.setText(QCoreApplication.translate("Widget", u"\u5e01\u672c\u4f4d", None))
         self.label.setText(QCoreApplication.translate("Widget", u"\u500d\u6570:", None))
-        self.leMultiples.setPlaceholderText(QCoreApplication.translate("Widget", u"\u6760\u6746\u500d\u6570", None))
+        self.leLeverage.setPlaceholderText(QCoreApplication.translate("Widget", u"\u6760\u6746\u500d\u6570", None))
         self.label_2.setText(QCoreApplication.translate("Widget", u"\u6b62\u635f(%):", None))
         self.leStopLossRatio.setPlaceholderText(QCoreApplication.translate("Widget", u"\u4ef7\u683c\u53cd\u5411\u6d6e\u52a8\u767e\u5206\u6bd4", None))
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u6570\u91cf:", None))

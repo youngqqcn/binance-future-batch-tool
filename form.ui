@@ -17,25 +17,25 @@
    <property name="geometry">
     <rect>
      <x>1070</x>
-     <y>140</y>
+     <y>150</y>
      <width>301</width>
-     <height>111</height>
+     <height>131</height>
     </rect>
    </property>
    <property name="title">
-    <string>市价平仓操作:</string>
+    <string>订单操作:</string>
    </property>
    <widget class="QPushButton" name="btnClosePosition">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>20</x>
       <y>50</y>
-      <width>171</width>
+      <width>141</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>市价全平(选中)</string>
+     <string>一键全部平仓</string>
     </property>
    </widget>
   </widget>
@@ -43,7 +43,7 @@
    <property name="geometry">
     <rect>
      <x>1070</x>
-     <y>270</y>
+     <y>310</y>
      <width>301</width>
      <height>331</height>
     </rect>
@@ -108,7 +108,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="leMultiples">
+          <widget class="QLineEdit" name="leLeverage">
            <property name="placeholderText">
             <string>杠杆倍数</string>
            </property>
