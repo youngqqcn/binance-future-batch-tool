@@ -7,7 +7,7 @@ import PySide6
 
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
-from PySide6.QtGui import  QStandardItem
+from PySide6.QtGui import  QStandardItem, QBrush, QColor
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
@@ -48,6 +48,8 @@ class Widget(QWidget):
 
         # 禁用币本位
         self.ui.rbtnTokenBase.setDisabled(True)
+        self.ui.btnMakeLong.setStyleSheet("background-color: #16E744")
+        self.ui.btnMakeShort.setStyleSheet("background-color: #ED4333")
 
         # add token 输入框正则验证器
         addTokenVal = QRegularExpressionValidator("[A-Za-z]{2,7}", self.ui.leToken)
@@ -99,9 +101,66 @@ class Widget(QWidget):
         #  密钥添加
         self.ui.btnSaveApiKeySecret.clicked.connect(self.saveApiKeySecret)
 
-        # self.ui.btnTestApiKey.clicked.connect(self.testApiKey)
+
+        # 获取当前仓位
+        self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
 
         pass
+
+    def getCurrentPositionInfo(self):
+        """获取仓位信息"""
+        positions = self.bnUmWrapper.getCurrentPosition()
+        if len(positions) == 0:
+            QMessageBox.information(self, '提示', f"当前仓位为空", QMessageBox.Yes)
+            return
+
+        # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
+        headers = ['交易对', '保证金模式', '方向', '杠杆倍数', '数量', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)']
+        self.posModel = QStandardItemModel(len(positions), len(headers), self)
+        self.posModel.setHorizontalHeaderLabels(headers)
+
+        for row in range(len(positions)):
+            self.posModel.setItem(row, 0, QStandardItem( str(positions[row]['symbol'] )))
+
+            marginMode = '逐仓' if positions[row]['marginType'] == 'isolated' else '全仓'
+            self.posModel.setItem(row, 1, QStandardItem( str(marginMode )))
+
+            side = '空' if positions[row]['side'] == 'SELL' else '多'
+            tmpItem = QStandardItem( side)
+            if side == 'SELL':
+                tmpItem.setForeground(QBrush(QColor(189, 14, 3)))
+            else:
+                # tmpItem.setForeground()
+                tmpItem.setForeground(QBrush(QColor(1, 150, 40)))
+            self.posModel.setItem(row, 2, tmpItem)
+
+            self.posModel.setItem(row, 3, QStandardItem( str(positions[row]['leverage'] + 'x' )))
+
+            amt = str(positions[row]['positionAmt']).replace('-', '')
+            self.posModel.setItem(row, 4, QStandardItem( str(amt)))
+
+            self.posModel.setItem(row, 5, QStandardItem( str(positions[row]['entryPrice'] )))
+            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['markPrice'] )))
+            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['liquidationPrice'] )))
+
+
+            profit = str(positions[row]['unRealizedProfit'] )
+            tmpItem = QStandardItem( profit )
+            if float(profit) > 0:
+                tmpItem.setBackground(QBrush(QColor(106, 236, 135)))
+            elif float(profit) == 0:
+                tmpItem.setBackground(QBrush(QColor(240, 113, 105)))
+            else:
+                pass
+            self.posModel.setItem(row, 8, tmpItem)
+
+        self.ui.tableViewCurPositions.setModel(self.posModel)
+        self.ui.tableViewCurPositions.show()
+
+
+
+        pass
+
 
     def saveApiKeySecret(self):
         """保存密钥信息"""

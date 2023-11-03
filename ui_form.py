@@ -110,19 +110,17 @@ class Ui_Widget(object):
         self.horizontalLayout.setSpacing(50)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(10, 10, 10, 10)
+        self.btnMakeShort = QPushButton(self.layoutWidget)
+        self.btnMakeShort.setObjectName(u"btnMakeShort")
+
+        self.horizontalLayout.addWidget(self.btnMakeShort)
+
         self.btnMakeLong = QPushButton(self.layoutWidget)
         self.btnMakeLong.setObjectName(u"btnMakeLong")
         self.btnMakeLong.setAutoDefault(False)
 
         self.horizontalLayout.addWidget(self.btnMakeLong)
 
-        self.btnMakeShort = QPushButton(self.layoutWidget)
-        self.btnMakeShort.setObjectName(u"btnMakeShort")
-
-        self.horizontalLayout.addWidget(self.btnMakeShort)
-
-        self.horizontalLayout.setStretch(0, 10)
-        self.horizontalLayout.setStretch(1, 10)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
@@ -167,9 +165,9 @@ class Ui_Widget(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
-        self.tableView_2 = QTableView(self.tab_2)
-        self.tableView_2.setObjectName(u"tableView_2")
-        self.tableView_2.setGeometry(QRect(50, 30, 1051, 621))
+        self.tableViewCurPositions = QTableView(self.tab_2)
+        self.tableViewCurPositions.setObjectName(u"tableViewCurPositions")
+        self.tableViewCurPositions.setGeometry(QRect(10, 10, 1111, 651))
         self.btnGetCurrentPosition = QPushButton(self.tab_2)
         self.btnGetCurrentPosition.setObjectName(u"btnGetCurrentPosition")
         self.btnGetCurrentPosition.setGeometry(QRect(1150, 170, 151, 61))
@@ -198,7 +196,7 @@ class Ui_Widget(object):
 
         self.retranslateUi(Widget)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(Widget)
@@ -216,8 +214,8 @@ class Ui_Widget(object):
         self.leStopLossRatio.setPlaceholderText(QCoreApplication.translate("Widget", u"\u80fd\u627f\u53d7\u4e8f\u635f\u7684\u767e\u5206\u6bd4", None))
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u6570\u91cf:", None))
         self.leAmount.setPlaceholderText(QCoreApplication.translate("Widget", u"U\u7684\u6570\u91cf,\u5fc5\u987b\u5927\u4e8e6", None))
-        self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.btnMakeShort.setText(QCoreApplication.translate("Widget", u"\u5f00\u7a7a", None))
+        self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("Widget", u"\u5e01\u79cd\u7ba1\u7406:", None))
         self.btnDeleteToken.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
         self.btnAddToken.setText(QCoreApplication.translate("Widget", u"\u6dfb\u52a0", None))

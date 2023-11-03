@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -145,7 +145,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,10">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
            <property name="spacing">
             <number>50</number>
            </property>
@@ -162,19 +162,19 @@
             <number>10</number>
            </property>
            <item>
+            <widget class="QPushButton" name="btnMakeShort">
+             <property name="text">
+              <string>开空</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="btnMakeLong">
              <property name="text">
               <string>开多</string>
              </property>
              <property name="autoDefault">
               <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnMakeShort">
-             <property name="text">
-              <string>开空</string>
              </property>
             </widget>
            </item>
@@ -255,13 +255,13 @@
     <attribute name="title">
      <string>仓位管理</string>
     </attribute>
-    <widget class="QTableView" name="tableView_2">
+    <widget class="QTableView" name="tableViewCurPositions">
      <property name="geometry">
       <rect>
-       <x>50</x>
-       <y>30</y>
-       <width>1051</width>
-       <height>621</height>
+       <x>10</x>
+       <y>10</y>
+       <width>1111</width>
+       <height>651</height>
       </rect>
      </property>
     </widget>
