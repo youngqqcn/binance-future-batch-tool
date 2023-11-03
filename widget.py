@@ -19,6 +19,7 @@ from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from ui_form import Ui_Widget
 
 
+
 class Widget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -50,9 +51,8 @@ class Widget(QWidget):
         self.ui.leStopLossRatio.setValidator(stopLossVal)
 
         # amount validator
-        amountVal =  QDoubleValidator()
-        amountVal.setRange(0.0001, 99999999999.9)
-        amountVal.setDecimals(4)
+        amountVal = QDoubleValidator()
+        amountVal.setRange(6, 1000)
         self.ui.leAmount.setValidator(amountVal)
 
 
@@ -324,6 +324,11 @@ class Widget(QWidget):
         if len(txtAmout) == 0:
             QMessageBox.question(self, '提示', f"请输入'数量'", QMessageBox.Yes)
             return False
+
+        if float(txtAmout) < 5.1:
+            QMessageBox.question(self, '提示', f"'数量'必须大于5.1", QMessageBox.Yes)
+            return False
+
 
         # 下单数据确认
         if True:
