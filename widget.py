@@ -41,6 +41,10 @@ class Widget(QWidget):
         secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
         self.bnUmWrapper = BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
 
+
+        # 禁用币本位
+        self.ui.rbtnTokenBase.setDisabled(True)
+
         # add token 输入框正则验证器
         addTokenVal = QRegularExpressionValidator("[A-Za-z]{2,7}", self.ui.leToken)
         self.ui.leToken.setValidator(addTokenVal)
@@ -255,6 +259,16 @@ class Widget(QWidget):
     def addToken(self):
         """添加币种"""
         token = self.ui.leToken.text()
+
+        found = False
+        for x in self.bnUmWrapper.exchangeInfo['symbols']:
+            if x['symbol'] == token+'USDT':
+                found = True
+                break
+        if not found:
+            QMessageBox.warning(self, '提示', f"{token}USDT交易对在币安不存在,请确认", QMessageBox.Yes)
+            return
+
         print(f'add token {token}')
         reply = QMessageBox.question(self, '提示', f"是否添加: {token} ?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.No:
@@ -304,6 +318,13 @@ class Widget(QWidget):
             QMessageBox.question(self, '提示', f"请选择币种", QMessageBox.Yes)
             return False
 
+        # 检查是否有重复仓位？
+        positions = self.bnUmWrapper.getCurrentPosition()
+        for pos in positions:
+            if pos['symbol'] in symbols:
+                token = str(pos['symbol']).replace('USDT', '')
+                QMessageBox.warning(self, '提示', f"已存在{token}的仓位,不支持追加持仓或双向持仓，请平仓后继续", QMessageBox.Yes)
+                return False
 
         # 有效性检查:
         txType = ''
@@ -410,8 +431,8 @@ class Widget(QWidget):
         symbols = self.getSelectedSymbols()
 
         usdtAmount = float(self.ui.leAmount.text())
-        stopRatio = float(self.ui.leStopLossRatio.text())
-        leverage = int(self.ui.leLeverage)
+        stopRatio = float(self.ui.leStopLossRatio.text())/100
+        leverage = int(self.ui.leLeverage.text())
 
 
         # 检查账户余额
@@ -434,7 +455,7 @@ class Widget(QWidget):
                     error.status_code, error.error_code, error.error_message))
                 QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
                 return
-        return
+        QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
 
 
 
@@ -449,7 +470,7 @@ class Widget(QWidget):
         print("市价全平，并撤销所有委托单")
         try:
             self.bnUmWrapper.closeAllPositionMarket()
-            # self.bnUmWrapper.cancelAllOrders()
+            self.bnUmWrapper.cancelAllOrders()
         except ClientError as error:
             logging.error("Found error. status: {}, error code: {}, error message: {}".format(
                     error.status_code, error.error_code, error.error_message))

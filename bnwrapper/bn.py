@@ -89,8 +89,9 @@ class  BnUmWrapper(object):
 
     def changeLeverage(self, symbol: str,  leverage: int):
         # 调整杠杆倍数, 如果有逐仓仓位，不能降低杠杆
-        positions = self.um_futures_client.get_position_risk(symbol=symbol)
+        positions = self.getCurrentPosition()
         curLeverage = 1
+
         for x in positions:
             if x['symbol'] == symbol:
                 curLeverage = int(x['leverage'])  # 杠杆倍数，只搞整数
@@ -262,9 +263,8 @@ def main():
     # print( bn.getAccountBalance(symbol='USDT') )
     print('==================')
     # pprint(bn.createNewOrders(5.5, 'RENUSDT', 'SELL', 0.05, 2))
-    # pprint(bn.getCurrentPosition())
-    pprint(bn.getOpenOrders())
-    # pprint(bn.getAllPositionSide())
+    pprint(bn.getCurrentPosition())
+    # pprint(bn.getOpenOrders())
     # pprint(bn.changeMarginTypeToIsolated('RENUSDT'))
     # pprint(bn.changeLeverage(symbol='RENUSDT', leverage=2))
     # pprint(bn.closeAllPositionMarket())

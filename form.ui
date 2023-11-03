@@ -117,14 +117,14 @@
          <item row="1" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>止损(%):</string>
+            <string>止损:</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
           <widget class="QLineEdit" name="leStopLossRatio">
            <property name="placeholderText">
-            <string>价格反向浮动百分比</string>
+            <string>能承受亏损的百分比</string>
            </property>
           </widget>
          </item>
@@ -138,7 +138,7 @@
          <item row="2" column="1">
           <widget class="QLineEdit" name="leAmount">
            <property name="placeholderText">
-            <string>输入USDT数量,必须大于5.1</string>
+            <string>U的数量,必须大于6</string>
            </property>
           </widget>
          </item>
