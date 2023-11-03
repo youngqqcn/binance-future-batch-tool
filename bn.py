@@ -1,8 +1,6 @@
 #coding:utf8
-
-
-# api: 8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V
-
+#author:yqq
+#date: 2023-11-3
 
 from pprint import pprint
 from binance.spot import Spot
@@ -21,6 +19,10 @@ class  BnUmWrapper(object):
     def __init__(self, apiKey, secretKey):
         # U本位合约
         self.um_futures_client = UMFutures(key=apiKey, secret=secretKey)
+
+
+        # 获取交易信息
+        self.exchangeInfo = self.um_futures_client.exchange_info()
         pass
 
 
@@ -42,9 +44,14 @@ class  BnUmWrapper(object):
     def changeMarginTypeToIsolated(self, symbol):
         """切换到 “逐仓”模式"""
         try:
-            ret = self.um_futures_client.change_margin_type(symbol=symbol, marginType='ISOLATED')
+            self.um_futures_client.change_margin_type(symbol=symbol, marginType='ISOLATED')
             return True
         except ClientError as error:
+
+            # 如果已经是逐仓模式，则忽略
+            if error.error_code == -4046:
+                return True
+
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
                     error.status_code, error.error_code, error.error_message
@@ -68,26 +75,29 @@ class  BnUmWrapper(object):
     def getPrecision(self, symbol):
         """获取精度, 返回数量精度，价格精度"""
 
-        exInfo = self.um_futures_client.exchange_info()
-        for x in exInfo['symbols']:
+        if self.exchangeInfo == None:
+            self.exchangeInfo = self.um_futures_client.exchange_info()
+
+        for x in self.exchangeInfo['symbols']:
             if x['symbol'] == symbol:
                 quantityPrecision = int(x['quantityPrecision'])
                 pricePrecision = int(x['pricePrecision'])
                 return quantityPrecision, pricePrecision
         raise Exception("not found symbol: {}".format(symbol))
 
-    def changeLeverage(self, leverage: int):
-        # 调整杠杆模式
-        try:
-            ret = self.um_futures_client.change_leverage(symbol='RENUSDT', leverage=leverage)
-            logging.info("调整杠杆倍数： {}, 成功".format(ret))
-        except ClientError as error:
-             logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message
-                )
-        )
-        pass
+
+
+    def changeLeverage(self, symbol: str,  leverage: int):
+        # 调整杠杆倍数, 如果有逐仓仓位，不能降低杠杆
+        positions = self.um_futures_client.get_position_risk(symbol=symbol)
+        curLeverage = 1
+        for x in positions:
+            if x['symbol'] == symbol:
+                curLeverage = int(x['leverage'])  # 杠杆倍数，只搞整数
+                if leverage < curLeverage:
+                    raise Exception("逐仓模式不能降低杠杆倍数, 如需降低杠杆倍数，请先平仓，然后重新建仓")
+                break
+        return self.um_futures_client.change_leverage(symbol=symbol, leverage=leverage)
 
     def getLatestPrice(self, symbol):
          # 获取最新价格，来计算下单数量, 不用标记价格
@@ -96,9 +106,26 @@ class  BnUmWrapper(object):
         logging.info(latestPrice)
         return latestPrice
 
+    def checkSingleSidePositionSide(self):
+        """检查是否是单向持仓"""
+
+        ret = self.um_futures_client.get_position_mode()
+        if ret['dualSidePosition'] == False:
+            return True
+        return False
+
 
     def createNewOrders(self, usdtQuantity: float, symbol: str , side: str, stopRatio: float, leverage: int ):
-        """创建新订单"""
+        """
+        创建新订单
+        Args:
+            usdtQuantity (float): usdt数量,会自动换算成币的数量
+            symbol (str): 交易对, 例如: BTCUSDT
+            side (str):  下单方向, 开多: BUY  ;  开空: SELL
+            stopRatio (float):  市价止损单,价格浮动百分比, 达到这个价格就市价止损
+            leverage (int): 杠杆倍数
+        """
+
 
         assert usdtQuantity > 5  , '无效参数, usdtQuantity {}'.format(usdtQuantity)
         assert side in ['BUY', 'SELL'], '无效参数 side {}'.format(side)
@@ -107,6 +134,9 @@ class  BnUmWrapper(object):
         assert 1 <= leverage <= 90 , '无效杠杆倍数: {}'.format(leverage)
 
         try:
+            # 调整杠杆倍数
+            self.changeLeverage(symbol=symbol, leverage=leverage)
+
             latestPrice = self.getLatestPrice(symbol=symbol)
 
             qp, pp = self.getPrecision(symbol=symbol)
@@ -162,12 +192,41 @@ class  BnUmWrapper(object):
         pass
 
 
+    def closeAllPositionMarket(self):
+        """市价全部平仓"""
+
+        # 确保是单向持仓模式
+        if not self.checkSingleSidePositionSide():
+            raise Exception("仅支持单向持仓模式的 一键全部市价平仓")
+
+        closePositionsOrders = []
+        # 获取当前所有仓位
+        positions = self.getCurrentPosition()
+        for pos in positions:
+            closeSide = 'BUY' if pos['side'] == 'SELL' else 'BUY'
+
+            # 空单的仓位量是负数
+            quantity = str(pos['positionAmt']).replace('-', '')
+
+            # 反向单
+            order = {
+                "symbol":           pos['symbol'],
+                "side":             closeSide,
+                "type":             "MARKET", # MARKET 市价平仓
+                "quantity":         quantity,  # 币的数量
+            }
+
+            closePositionsOrders.append(order)
+
+        self.um_futures_client.new_batch_order(batchOrders=closePositionsOrders)
+        pass
+
+
     def getCurrentPosition(self):
         """获取当前仓位信息"""
-
-        ret = self.um_futures_client.account()
         poss = []
-        for x in ret['positions']:
+        positions = self.um_futures_client.get_position_risk()
+        for x in positions:
             # positionAmt 小于0则是空单; 大于0是多单
             if float(x['positionAmt']) != 0:
                 x['side'] = 'SELL' if float(x['positionAmt']) < 0 else 'BUY'   # SELL:空单 ， BUY: 多单
@@ -181,22 +240,19 @@ class  BnUmWrapper(object):
 
 
 
-    def cancelAllOrders(self, symbol: str):
+    def cancelAllOrders(self):
         """撤销所有委托单"""
-        ret = self.um_futures_client.cancel_open_orders(symbol=symbol)
+        orders = self.um_futures_client.get_orders()
+        symbols = set()
+        for x in orders:
+            symbols.add(x['symbol'])
+
+        for x in symbols:
+            self.um_futures_client.cancel_open_orders(symbol=x)
 
 
 
 
-    def closeAllPositionMarket(self, symbol: str):
-        """市价全部平仓"""
-
-        # 获取当前所有仓位
-        positions = self.getCurrentPosition()
-
-
-
-        pass
 
 
 
@@ -209,8 +265,14 @@ def main():
     # print( bn.getAccountBalance(symbol='USDT') )
     print('==================')
     # pprint(bn.createNewOrders(5.5, 'RENUSDT', 'SELL', 0.05, 2))
-    pprint(bn.getCurrentPosition())
-    # pprint(bn.getOpenOrders())
+    # pprint(bn.getCurrentPosition())
+    pprint(bn.getOpenOrders())
+    # pprint(bn.getAllPositionSide())
+    # pprint(bn.changeMarginTypeToIsolated('RENUSDT'))
+    # pprint(bn.changeLeverage(symbol='RENUSDT', leverage=2))
+    # pprint(bn.closeAllPositionMarket())
+    # pprint(bn.cancelAllOrders())
+
     pass
 
 if __name__ == '__main__':
