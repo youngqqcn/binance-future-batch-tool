@@ -27,7 +27,7 @@
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
-     <string>建仓</string>
+     <string>主界面</string>
     </attribute>
     <widget class="QTableView" name="tableView">
      <property name="geometry">
@@ -138,7 +138,7 @@
            <item row="2" column="1">
             <widget class="QLineEdit" name="leAmount">
              <property name="placeholderText">
-              <string>U的数量,必须大于6</string>
+              <string>USDT的数量,必须大于6</string>
              </property>
             </widget>
            </item>
@@ -195,7 +195,7 @@
       </rect>
      </property>
      <property name="title">
-      <string>币种管理:</string>
+      <string>交易对管理:</string>
      </property>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
@@ -228,7 +228,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>191</width>
+        <width>241</width>
         <height>41</height>
        </rect>
       </property>
@@ -243,7 +243,7 @@
        <item>
         <widget class="QLineEdit" name="leToken">
          <property name="placeholderText">
-          <string>输入币名...</string>
+          <string>输入币名或交易对...</string>
          </property>
         </widget>
        </item>

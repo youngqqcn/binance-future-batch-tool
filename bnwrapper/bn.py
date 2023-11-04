@@ -10,7 +10,7 @@ from binance.um_futures import UMFutures
 from binance.lib.utils import config_logging
 from binance.error import ClientError
 
-config_logging(logging, logging.INFO)
+config_logging(logging, logging.DEBUG)
 
 
 class  BnUmWrapper(object):
@@ -22,7 +22,7 @@ class  BnUmWrapper(object):
 
 
         # 获取交易信息
-        self.exchangeInfo = self.um_futures_client.exchange_info()
+        self.exchangeInfo = None # self.um_futures_client.exchange_info()
         pass
 
 
@@ -158,7 +158,7 @@ class  BnUmWrapper(object):
 
 
         # 止损方向
-        stopSide = 'SELL' if side == 'BUY' else 'BUY'
+        stopSide = 'BUY' if side == 'SELL' else 'SELL'
         assert stopSide != side
 
         orders = [
@@ -201,7 +201,7 @@ class  BnUmWrapper(object):
             return
         logging.info('当前仓位:{}'.format(positions))
         for pos in positions:
-            closeSide = 'BUY' if pos['side'] == 'SELL' else 'BUY'
+            closeSide = 'BUY' if pos['side'] == 'SELL' else 'SELL'
 
             # 空单的仓位量是负数
             quantity = str(pos['positionAmt']).replace('-', '')
@@ -240,6 +240,7 @@ class  BnUmWrapper(object):
 
     def cancelAllOrders(self):
         """撤销所有委托单"""
+        logging.info("撤销所有委托单")
         orders = self.um_futures_client.get_orders()
         symbols = set()
         for x in orders:
@@ -247,9 +248,6 @@ class  BnUmWrapper(object):
 
         for x in symbols:
             self.um_futures_client.cancel_open_orders(symbol=x)
-
-
-
 
 
 

@@ -7,7 +7,7 @@ import PySide6
 
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
-from PySide6.QtGui import  QStandardItem, QBrush, QColor
+from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
@@ -31,6 +31,7 @@ class Widget(QWidget):
 
 
         self.setWindowTitle("合约一键下单工具v1.0")
+        self.setWindowIcon(QIcon('logo.png'))
         #self.resize(800, 600)
 
         # 初始化数据库
@@ -42,9 +43,6 @@ class Widget(QWidget):
         if len(apiKey) == 64 or len(secretKey) == 64:
             self.bnUmWrapper = BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
 
-        # apiKey = '8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V'
-        # secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
-
 
         # 禁用币本位
         self.ui.rbtnTokenBase.setDisabled(True)
@@ -52,7 +50,7 @@ class Widget(QWidget):
         self.ui.btnMakeShort.setStyleSheet("background-color: #ED4333")
 
         # add token 输入框正则验证器
-        addTokenVal = QRegularExpressionValidator("[A-Za-z]{2,7}", self.ui.leToken)
+        addTokenVal = QRegularExpressionValidator("[A-Za-z0-9]{2,20}", self.ui.leToken)
         self.ui.leToken.setValidator(addTokenVal)
 
 
@@ -93,14 +91,15 @@ class Widget(QWidget):
         # 删除币种
         self.ui.btnDeleteToken.clicked.connect(self.deleteToken)
 
-        # 市价全平（选中）
-        self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
         self.initTargetView()
 
         #  密钥添加
         self.ui.btnSaveApiKeySecret.clicked.connect(self.saveApiKeySecret)
 
+
+        # 市价全平（选中）
+        self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
         # 获取当前仓位
         self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
@@ -109,11 +108,13 @@ class Widget(QWidget):
 
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
+        self.ui.btnGetCurrentPosition.setEnabled(False)
+
         positions = self.bnUmWrapper.getCurrentPosition()
 
 
         # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
-        headers = ['交易对', '保证金模式', '方向', '杠杆倍数', '数量', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)']
+        headers = ['交易对', '保证金模式', '方向', '杠杆倍数', '数量(币)', '估值($)', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)']
         self.posModel = QStandardItemModel(len(positions), len(headers), self)
         self.posModel.setHorizontalHeaderLabels(headers)
 
@@ -125,7 +126,7 @@ class Widget(QWidget):
 
             side = '空' if positions[row]['side'] == 'SELL' else '多'
             tmpItem = QStandardItem( side)
-            if side == 'SELL':
+            if side == '空':
                 tmpItem.setForeground(QBrush(QColor(189, 14, 3)))
             else:
                 # tmpItem.setForeground()
@@ -136,30 +137,26 @@ class Widget(QWidget):
 
             amt = str(positions[row]['positionAmt']).replace('-', '')
             self.posModel.setItem(row, 4, QStandardItem( str(amt)))
+            self.posModel.setItem(row, 5, QStandardItem( str(positions[row]['notional'] )))
 
-            self.posModel.setItem(row, 5, QStandardItem( str(positions[row]['entryPrice'] )))
-            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['markPrice'] )))
-            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['liquidationPrice'] )))
+            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['entryPrice'] )))
+            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['markPrice'] )))
+            self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['liquidationPrice'] )))
 
 
             profit = str(positions[row]['unRealizedProfit'] )
-            tmpItem = QStandardItem( profit )
-            if float(profit) > 0:
-                tmpItem.setBackground(QBrush(QColor(106, 236, 135)))
-            elif float(profit) == 0:
-                tmpItem.setBackground(QBrush(QColor(240, 113, 105)))
+            xItem = QStandardItem( profit )
+            if float(profit) < 0:
+                xItem.setForeground(QBrush(QColor(189, 14, 3)))
             else:
-                pass
-            self.posModel.setItem(row, 8, tmpItem)
+                xItem.setForeground(QBrush(QColor(1, 150, 40)))
+            self.posModel.setItem(row, 9, xItem)
 
         self.ui.tableViewCurPositions.setModel(self.posModel)
         self.ui.tableViewCurPositions.show()
 
 
-        if len(positions) == 0:
-            QMessageBox.information(self, '提示', f"当前仓位为空", QMessageBox.Yes)
-            return
-
+        self.ui.btnGetCurrentPosition.setEnabled(True)
         pass
 
 
@@ -219,8 +216,6 @@ class Widget(QWidget):
             if len(ak) == 64 and len(sk) == 64:
                 ak = ak[37:] + ak[:37]
                 sk = sk[27:] + sk[:27]
-                print(ak)
-                print(sk)
                 return ak, sk
         else:
             return '', ''
@@ -405,7 +400,13 @@ class Widget(QWidget):
 
         token = self.ui.leToken.text()
 
+        if token.endswith('USDT'):
+            token = token.replace('USDT', '')
+
         found = False
+        if self.bnUmWrapper.exchangeInfo is None:
+            self.bnUmWrapper.getPrecision('BTCUSDT')
+
         for x in self.bnUmWrapper.exchangeInfo['symbols']:
             if x['symbol'] == token+'USDT':
                 found = True
@@ -435,11 +436,16 @@ class Widget(QWidget):
     def deleteToken(self):
         """删除币种"""
         print('delete token')
+
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
             return
 
         token = self.ui.leToken.text()
+
+        if token.endswith('USDT'):
+            token = token.replace('USDT', '')
+
         print(f'delete token {token}')
         reply = QMessageBox.question(self, '提示', f"是否删除: {token} ?", QMessageBox.Yes |QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.No:
@@ -561,7 +567,13 @@ class Widget(QWidget):
         市价开多
         """
         print("makeLong")
+        self.ui.btnMakeLong.setEnabled(False)
+        self.ui.btnMakeShort.setEnabled(False)
+
         self.__makeOrder(side='BUY')
+
+        self.ui.btnMakeLong.setEnabled(True)
+        self.ui.btnMakeShort.setEnabled(True)
 
 
     def makeShort(self):
@@ -569,50 +581,62 @@ class Widget(QWidget):
         市价开空
         """
         print("makeShort")
+        self.ui.btnMakeLong.setEnabled(False)
+        self.ui.btnMakeShort.setEnabled(False)
+
         self.__makeOrder(side='SELL')
+
+        self.ui.btnMakeLong.setEnabled(True)
+        self.ui.btnMakeShort.setEnabled(True)
 
 
     def __makeOrder(self, side: str):
 
-        assert side in ['BUY', 'SELL']
+        try:
+            assert side in ['BUY', 'SELL']
 
-        if not self.checkOrderData():
-            return
-
-        symbols = self.getSelectedSymbols()
-
-        usdtAmount = float(self.ui.leAmount.text())
-        stopRatio = float(self.ui.leStopLossRatio.text())/100
-        leverage = int(self.ui.leLeverage.text())
-
-
-        # 检查账户余额
-        totalBalance = len(symbols) * usdtAmount
-        usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
-        if totalBalance - usdtBalance  < 0.1 * len(symbols):
-            return
-
-        for symbol in symbols:
-            try:
-                self.bnUmWrapper.createNewOrders(
-                        usdtQuantity=usdtAmount,
-                        symbol=symbol,
-                        side=side,
-                        stopRatio=stopRatio,
-                        leverage=leverage
-                    )
-            except ClientError as error:
-                logging.error("Found error. status: {}, error code: {}, error message: {}".format(
-                    error.status_code, error.error_code, error.error_message))
-                QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+            if not self.checkOrderData():
                 return
-        QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
+
+            symbols = self.getSelectedSymbols()
+
+            usdtAmount = float(self.ui.leAmount.text())
+            stopRatio = float(self.ui.leStopLossRatio.text())/100
+            leverage = int(self.ui.leLeverage.text())
+
+
+            # 检查账户余额
+            totalBalance = len(symbols) * usdtAmount
+            usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
+            if totalBalance - usdtBalance  < 0.1 * len(symbols):
+                return
+
+            for symbol in symbols:
+                try:
+                    self.bnUmWrapper.createNewOrders(
+                            usdtQuantity=usdtAmount,
+                            symbol=symbol,
+                            side=side,
+                            stopRatio=stopRatio,
+                            leverage=leverage
+                        )
+                except ClientError as error:
+                    logging.error("Found error. status: {}, error code: {}, error message: {}".format(
+                        error.status_code, error.error_code, error.error_message))
+                    QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+                    return
+            QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
+        except Exception as e:
+            logging.error(" error:  {}".format(e))
+            pass
+
 
 
 
 
     def closePosition(self):
         """市价平仓"""
+
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
             return
@@ -623,15 +647,22 @@ class Widget(QWidget):
 
         print("市价全平，并撤销所有委托单")
         try:
+            self.ui.btnClosePosition.setEnabled(False)
             self.bnUmWrapper.closeAllPositionMarket()
             self.bnUmWrapper.cancelAllOrders()
+            QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
+            self.getCurrentPositionInfo()
         except ClientError as error:
             logging.error("Found error. status: {}, error code: {}, error message: {}".format(
                     error.status_code, error.error_code, error.error_message))
             QMessageBox.critical(self, '错误', f"{error.error_message}", QMessageBox.Yes)
-            return
+        except Exception as e:
+            logging.error("{}".format(e))
+            QMessageBox.critical(self, '错误', f"{e}", QMessageBox.Yes)
 
-        QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
+        self.ui.btnClosePosition.setEnabled(True)
+
+
 
 
 
