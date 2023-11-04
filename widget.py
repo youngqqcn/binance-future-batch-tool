@@ -427,8 +427,14 @@ class Widget(QWidget):
             QMessageBox.warning(self, '提示',f"{token}已经存在", QMessageBox.Yes)
             return
 
+        # 切换到逐仓模式
+        if not self.bnUmWrapper.changeMarginTypeToIsolated(symbol=token+'USDT'):
+            QMessageBox.warning(self, '提示',f"{token}切换逐仓模式失败", QMessageBox.Yes)
+            return
+
         if not query.exec("""INSERT INTO tb_tokenlist(token) VALUES('{0}')""".format(token)):
             QMessageBox.warning(self, '错误',f"{token}添加失败", QMessageBox.Yes)
+
 
         # 更新界面
         self.LoadTarget()
