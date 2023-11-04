@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageB
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
 from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
 from PySide6.QtCore import QItemSelectionModel
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt,QThread, Signal
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
 
@@ -108,7 +108,6 @@ class Widget(QWidget):
 
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
-        self.ui.btnGetCurrentPosition.setEnabled(False)
 
         positions = self.bnUmWrapper.getCurrentPosition()
 
@@ -156,12 +155,13 @@ class Widget(QWidget):
         self.ui.tableViewCurPositions.show()
 
 
-        self.ui.btnGetCurrentPosition.setEnabled(True)
         pass
 
 
     def saveApiKeySecret(self):
         """保存密钥信息"""
+
+
         if not self.testApiKey():
             return
 
@@ -171,16 +171,17 @@ class Widget(QWidget):
         query = QSqlQuery(self.db)
         query.exec("""DELETE from tb_account WHERE tag='default'""")
 
-        self.bnUmWrapper = BnUmWrapper(apiKey=ak, secretKey=sk)
 
         ak = ak[-37:] + ak[:-37]
         sk = sk[-27:] + sk[:-27]
         if query.exec("""INSERT INTO tb_account(tag, ak, sk) VALUES('default','{0}','{1}')""".format(ak, sk)):
             QMessageBox.information(self, '提示', f"操作成功", QMessageBox.Yes)
+            self.bnUmWrapper = BnUmWrapper(apiKey=ak, secretKey=sk)
+
             self.ui.leApiKey.setText('')
             self.ui.leSecretKey.setText('')
-            return
-        QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
+        else:
+            QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
 
     def testApiKey(self):
         """测试api密钥是否可用"""
@@ -567,13 +568,9 @@ class Widget(QWidget):
         市价开多
         """
         print("makeLong")
-        self.ui.btnMakeLong.setEnabled(False)
-        self.ui.btnMakeShort.setEnabled(False)
 
         self.__makeOrder(side='BUY')
 
-        self.ui.btnMakeLong.setEnabled(True)
-        self.ui.btnMakeShort.setEnabled(True)
 
 
     def makeShort(self):
@@ -581,18 +578,16 @@ class Widget(QWidget):
         市价开空
         """
         print("makeShort")
-        self.ui.btnMakeLong.setEnabled(False)
-        self.ui.btnMakeShort.setEnabled(False)
-
         self.__makeOrder(side='SELL')
 
-        self.ui.btnMakeLong.setEnabled(True)
-        self.ui.btnMakeShort.setEnabled(True)
+
 
 
     def __makeOrder(self, side: str):
 
         try:
+            self.disableAllButton()
+
             assert side in ['BUY', 'SELL']
 
             if not self.checkOrderData():
@@ -604,34 +599,62 @@ class Widget(QWidget):
             stopRatio = float(self.ui.leStopLossRatio.text())/100
             leverage = int(self.ui.leLeverage.text())
 
+            # 创建下单线程
+            self.orderThread = CreateOrderThread(self.bnUmWrapper,
+                                                symbols=symbols,
+                                                usdtAmount=usdtAmount,
+                                                side=side,
+                                                stopRatio=stopRatio,
+                                                leverage=leverage
+            )
+            self.orderThread.finishSignal.connect(self.showCreateOrdersThreadResult)
 
-            # 检查账户余额
-            totalBalance = len(symbols) * usdtAmount
-            usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
-            if totalBalance - usdtBalance  < 0.1 * len(symbols):
-                return
+            self.orderThread.start()
+            print('===========下单线程已启动============')
 
-            for symbol in symbols:
-                try:
-                    self.bnUmWrapper.createNewOrders(
-                            usdtQuantity=usdtAmount,
-                            symbol=symbol,
-                            side=side,
-                            stopRatio=stopRatio,
-                            leverage=leverage
-                        )
-                except ClientError as error:
-                    logging.error("Found error. status: {}, error code: {}, error message: {}".format(
-                        error.status_code, error.error_code, error.error_message))
-                    QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
-                    return
-            QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
         except Exception as e:
             logging.error(" error:  {}".format(e))
+            self.enableAllButton()
             pass
 
+    def disableAllButton(self):
+        self.ui.btnMakeLong.setEnabled(False)
+        self.ui.btnMakeShort.setEnabled(False)
+        self.ui.btnAddToken.setEnabled(False)
+        self.ui.btnDeleteToken.setEnabled(False)
+        self.ui.btnClosePosition.setEnabled(False)
+        self.ui.btnSaveApiKeySecret.setEnabled(False)
+        self.ui.btnGetCurrentPosition.setEnabled(False)
+        pass
+
+    def enableAllButton(self):
+        self.ui.btnMakeLong.setEnabled(True)
+        self.ui.btnMakeShort.setEnabled(True)
+        self.ui.btnAddToken.setEnabled(True)
+        self.ui.btnDeleteToken.setEnabled(True)
+        self.ui.btnClosePosition.setEnabled(True)
+        self.ui.btnSaveApiKeySecret.setEnabled(True)
+        self.ui.btnGetCurrentPosition.setEnabled(True)
+
+    def showCreateOrdersThreadResult(self, count, code, msg):
+        """显示显示线程执行结果"""
+        if code == 0:
+            QMessageBox.information(self, "提示", f"下单{count}笔成功!", QMessageBox.Yes)
+        else:
+            QMessageBox.warning(self, '提示', f"成功下单{count}笔,第{count+1}笔失败, 错误码:{code},信息：{msg}", QMessageBox.Yes)
+
+        self.enableAllButton()
 
 
+    def showCloseAllPositionsThreadResult(self,  code, msg):
+        """显示显示线程执行结果"""
+        if code == 0:
+            QMessageBox.information(self, "提示", f"操作成功!", QMessageBox.Yes)
+        else:
+            QMessageBox.warning(self, '提示', f"操作失败, 错误码:{code},信息：{msg}", QMessageBox.Yes)
+        self.getCurrentPositionInfo()
+
+        self.enableAllButton()
 
 
     def closePosition(self):
@@ -641,26 +664,80 @@ class Widget(QWidget):
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
             return
 
+        print("市价全平，并撤销所有委托单")
         reply = QMessageBox.question(self, '提示', f"所有币种按照市价平仓，并且撤销所有委托单，是否继续？", QMessageBox.Yes, QMessageBox.No)
         if reply != QMessageBox.Yes:
             return
 
-        print("市价全平，并撤销所有委托单")
+        self.disableAllButton()
+
+        self.orderThread = CloseAllPositionThread(self.bnUmWrapper)
+        self.orderThread.finishSignal.connect(self.showCloseAllPositionsThreadResult)
+        self.orderThread.start()
+
+
+
+
+class CloseAllPositionThread(QThread):
+    """全部平仓线程"""
+    finishSignal = Signal(int,  str)
+
+    def __init__(self, bnUmWrapper):
+        self.bnUmWrapper = bnUmWrapper
+        super().__init__()
+
+    def run(self):
         try:
-            self.ui.btnClosePosition.setEnabled(False)
             self.bnUmWrapper.closeAllPositionMarket()
             self.bnUmWrapper.cancelAllOrders()
-            QMessageBox.information(self, '提示', "操作成功！", QMessageBox.Yes)
-            self.getCurrentPositionInfo()
+            self.finishSignal.emit(  0, '')
         except ClientError as error:
             logging.error("Found error. status: {}, error code: {}, error message: {}".format(
                     error.status_code, error.error_code, error.error_message))
-            QMessageBox.critical(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+            self.finishSignal.emit(  error.error_code, error.error_message)
         except Exception as e:
             logging.error("{}".format(e))
-            QMessageBox.critical(self, '错误', f"{e}", QMessageBox.Yes)
+            self.finishSignal.emit(  -1, '{}'.format(e))
 
-        self.ui.btnClosePosition.setEnabled(True)
+        pass
+
+
+class CreateOrderThread(QThread):
+    """下单线程"""
+
+    finishSignal = Signal(int, int, str)
+
+    def __init__(self, bnUmWrapper, symbols, usdtAmount, side, stopRatio, leverage):
+        self.bnUmWrapper = bnUmWrapper
+        self.symbols = symbols
+        self.usdtAmount = usdtAmount
+        self.side = side
+        self.stopRatio = stopRatio
+        self.leverage = leverage
+        super().__init__()
+
+    def run(self):
+        count = 0
+        for symbol in self.symbols:
+            try:
+                self.bnUmWrapper.createNewOrders(
+                        usdtQuantity=self.usdtAmount,
+                        symbol=symbol,
+                        side=self.side,
+                        stopRatio=self.stopRatio,
+                        leverage=self.leverage
+                    )
+            except ClientError as error:
+                logging.error("Found error. status: {}, error code: {}, error message: {}".format(
+                    error.status_code, error.error_code, error.error_message))
+                # QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
+                self.finishSignal.emit( count,  error.error_code, error.error_message)
+                return
+            count += 1
+
+        self.finishSignal.emit( count,  0, '')
+
+
 
 
 
