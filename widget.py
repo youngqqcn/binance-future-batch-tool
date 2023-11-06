@@ -730,12 +730,10 @@ class ProgressDialog(QDialog):
 
         # 创建进度条和取消按钮
         self.progressBar = QProgressBar()
-        # self.cancelButton = QPushButton('Cancel')
 
         # 布局控件
         layout = QVBoxLayout()
         layout.addWidget(self.progressBar)
-        # layout.addWidget(self.cancelButton)
         self.setLayout(layout)
 
     def setProgress(self, percentage):
@@ -744,18 +742,11 @@ class ProgressDialog(QDialog):
         if percentage == 100:
             self.close()
 
-    # def closeEvent(self, event):
-        # 关闭窗口时发送cancel信号
-        # self.cancelSignal.emit()
-
-    # cancelSignal = Signal()
-
 
 
 class CloseAllPositionThread(QThread):
     """全部平仓线程"""
     finishSignal = Signal(int,  str)
-    progressSignal = Signal(int)  # 进度信号
 
     def __init__(self, bnUmWrapper):
         self.bnUmWrapper = bnUmWrapper
@@ -774,7 +765,6 @@ class CloseAllPositionThread(QThread):
             logging.error("{}".format(e))
             self.finishSignal.emit(  -1, '{}'.format(e))
 
-        self.progressSignal.emit(100)
 
         pass
 
