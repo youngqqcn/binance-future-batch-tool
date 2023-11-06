@@ -2,9 +2,6 @@
 import logging
 import sys
 from typing import List
-import PySide6
-
-
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
 from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
@@ -755,14 +752,13 @@ class CreateOrderThread(QThread):
                 # QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
                 self.finishSignal.emit( count,  error.error_code, error.error_message)
                 return
+            except Exception as e:
+                logging.error("error: {}".format(e))
+                pass
+            
             count += 1
 
         self.finishSignal.emit( count,  0, '')
-
-
-
-
-
 
 
 if __name__ == "__main__":
