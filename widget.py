@@ -583,6 +583,7 @@ class Widget(QWidget):
             if not self.bnUmWrapper.changeMarginTypeToIsolated(symbol=symbol):
                 # query.exec("""DELETE from tb_tokenlist WHERE token='{0}'""".format(t))
                 QMessageBox.warning(self, '提示', f"切换{symbol}交易对到逐仓模式失败,请联系管理员!", QMessageBox.Yes)
+                return False
 
         return True
 
