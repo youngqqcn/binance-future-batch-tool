@@ -8,6 +8,8 @@ from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt,QThread, Signal
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
+from PySide6.QtWidgets import QApplication, QDialog, QProgressBar, QVBoxLayout, QPushButton
+
 
 
 # Important:
@@ -621,6 +623,9 @@ class Widget(QWidget):
     def __makeOrder(self, side: str):
 
         try:
+            self.processDialog = ProgressDialog(parent=self)
+
+
             self.disableAllButton()
 
             assert side in ['BUY', 'SELL']
@@ -643,8 +648,12 @@ class Widget(QWidget):
                                                 leverage=leverage
             )
             self.orderThread.finishSignal.connect(self.showCreateOrdersThreadResult)
+            self.orderThread.progressSignal.connect(self.processDialog.setProgress)
 
             self.orderThread.start()
+
+            self.processDialog.exec()
+
             print('===========下单线程已启动============')
 
         except Exception as e:
@@ -653,23 +662,24 @@ class Widget(QWidget):
             pass
 
     def disableAllButton(self):
-        self.ui.btnMakeLong.setEnabled(False)
-        self.ui.btnMakeShort.setEnabled(False)
-        self.ui.btnAddToken.setEnabled(False)
-        self.ui.btnDeleteToken.setEnabled(False)
-        self.ui.btnClosePosition.setEnabled(False)
-        self.ui.btnSaveApiKeySecret.setEnabled(False)
-        self.ui.btnGetCurrentPosition.setEnabled(False)
+        # self.ui.btnMakeLong.setEnabled(False)
+        # self.ui.btnMakeShort.setEnabled(False)
+        # self.ui.btnAddToken.setEnabled(False)
+        # self.ui.btnDeleteToken.setEnabled(False)
+        # self.ui.btnClosePosition.setEnabled(False)
+        # self.ui.btnSaveApiKeySecret.setEnabled(False)
+        # self.ui.btnGetCurrentPosition.setEnabled(False)
         pass
 
     def enableAllButton(self):
-        self.ui.btnMakeLong.setEnabled(True)
-        self.ui.btnMakeShort.setEnabled(True)
-        self.ui.btnAddToken.setEnabled(True)
-        self.ui.btnDeleteToken.setEnabled(True)
-        self.ui.btnClosePosition.setEnabled(True)
-        self.ui.btnSaveApiKeySecret.setEnabled(True)
-        self.ui.btnGetCurrentPosition.setEnabled(True)
+        # self.ui.btnMakeLong.setEnabled(True)
+        # self.ui.btnMakeShort.setEnabled(True)
+        # self.ui.btnAddToken.setEnabled(True)
+        # self.ui.btnDeleteToken.setEnabled(True)
+        # self.ui.btnClosePosition.setEnabled(True)
+        # self.ui.btnSaveApiKeySecret.setEnabled(True)
+        # self.ui.btnGetCurrentPosition.setEnabled(True)
+        pass
 
     def showCreateOrdersThreadResult(self, count, code, msg):
         """显示显示线程执行结果"""
@@ -711,11 +721,41 @@ class Widget(QWidget):
         self.orderThread.start()
 
 
+class ProgressDialog(QDialog):
+    """进度条"""
+
+    def __init__(self, parent:None):
+        super().__init__(parent=parent)
+        self.setWindowTitle('请耐心等待,当前操作进度:')
+
+        # 创建进度条和取消按钮
+        self.progressBar = QProgressBar()
+        # self.cancelButton = QPushButton('Cancel')
+
+        # 布局控件
+        layout = QVBoxLayout()
+        layout.addWidget(self.progressBar)
+        # layout.addWidget(self.cancelButton)
+        self.setLayout(layout)
+
+    def setProgress(self, percentage):
+        # 更新进度条的值
+        self.progressBar.setValue(percentage)
+        if percentage == 100:
+            self.close()
+
+    # def closeEvent(self, event):
+        # 关闭窗口时发送cancel信号
+        # self.cancelSignal.emit()
+
+    # cancelSignal = Signal()
+
 
 
 class CloseAllPositionThread(QThread):
     """全部平仓线程"""
     finishSignal = Signal(int,  str)
+    progressSignal = Signal(int)  # 进度信号
 
     def __init__(self, bnUmWrapper):
         self.bnUmWrapper = bnUmWrapper
@@ -734,6 +774,8 @@ class CloseAllPositionThread(QThread):
             logging.error("{}".format(e))
             self.finishSignal.emit(  -1, '{}'.format(e))
 
+        self.progressSignal.emit(100)
+
         pass
 
 
@@ -741,6 +783,7 @@ class CreateOrderThread(QThread):
     """下单线程"""
 
     finishSignal = Signal(int, int, str)
+    progressSignal = Signal(int)  # 进度信号
 
     def __init__(self, bnUmWrapper, symbols, usdtAmount, side, stopRatio, leverage):
         self.bnUmWrapper = bnUmWrapper
@@ -767,13 +810,19 @@ class CreateOrderThread(QThread):
                     error.status_code, error.error_code, error.error_message))
                 # QMessageBox.warning(self, '错误', f"{error.error_message}", QMessageBox.Yes)
                 self.finishSignal.emit( count,  error.error_code, error.error_message)
+                self.progressSignal.emit(100)
                 return
             except Exception as e:
                 logging.error("error: {}".format(e))
-                pass
+                self.progressSignal.emit(100)
+                return
 
             count += 1
+            process = int(count/len(self.symbols) * 100)
+            self.progressSignal.emit(process)
 
+
+        self.progressSignal.emit(100)
         self.finishSignal.emit( count,  0, '')
 
 
