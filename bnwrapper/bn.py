@@ -10,7 +10,7 @@ from binance.um_futures import UMFutures
 from binance.lib.utils import config_logging
 from binance.error import ClientError
 
-config_logging(logging, logging.DEBUG)
+# config_logging(logging, logging.DEBUG)
 
 
 class  BnUmWrapper(object):
