@@ -50,8 +50,8 @@ class Widget(QWidget):
         self.ui.btnMakeShort.setStyleSheet("background-color: #ED4333")
 
         # add token 输入框正则验证器
-        addTokenVal = QRegularExpressionValidator("[A-Za-z0-9]{2,20}", self.ui.leToken)
-        self.ui.leToken.setValidator(addTokenVal)
+        # addTokenVal = QRegularExpressionValidator("[A-Za-z0-9]{2,20}", self.ui.leToken)
+        # self.ui.leToken.setValidator(addTokenVal)
 
 
         # multiple validator
@@ -183,6 +183,9 @@ class Widget(QWidget):
 
             self.ui.leApiKey.setText('')
             self.ui.leSecretKey.setText('')
+
+
+
         else:
             QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
 
@@ -241,6 +244,7 @@ class Widget(QWidget):
         super().closeEvent(event)
 
     def autoCapitalize(self, txts):
+        txts = str(txts).strip()
         self.ui.leToken.setText(txts.upper())   #这是设置所有字母大写
 
 
@@ -438,6 +442,7 @@ class Widget(QWidget):
         if not query.exec("""INSERT INTO tb_tokenlist(token) VALUES('{0}')""".format(token)):
             QMessageBox.warning(self, '错误',f"{token}添加失败", QMessageBox.Yes)
 
+        self.ui.leToken.setText('')
 
         # 更新界面
         self.LoadTarget()
@@ -559,6 +564,14 @@ class Widget(QWidget):
                 if r == QMessageBox.No:
                     return False
 
+         # 将所有币对,切换到逐仓模式
+        tokens = self.loadTokenFromDatabase()
+        for t in tokens:
+            symbol = t + 'USDT'
+            if not self.bnUmWrapper.changeMarginTypeToIsolated(symbol=symbol):
+                # query.exec("""DELETE from tb_tokenlist WHERE token='{0}'""".format(t))
+                QMessageBox.warning(self, '提示', f"切换{symbol}交易对到逐仓模式失败,请联系管理员!", QMessageBox.Yes)
+
         return True
 
     def getSelectedSymbols(self):
@@ -647,23 +660,23 @@ class Widget(QWidget):
 
     def showCreateOrdersThreadResult(self, count, code, msg):
         """显示显示线程执行结果"""
+        self.enableAllButton()
         if code == 0:
             QMessageBox.information(self, "提示", f"下单{count}笔成功!", QMessageBox.Yes)
         else:
             QMessageBox.warning(self, '提示', f"成功下单{count}笔,第{count+1}笔失败, 错误码:{code},信息：{msg}", QMessageBox.Yes)
 
-        self.enableAllButton()
 
 
     def showCloseAllPositionsThreadResult(self,  code, msg):
         """显示显示线程执行结果"""
+        self.enableAllButton()
         if code == 0:
             QMessageBox.information(self, "提示", f"操作成功!", QMessageBox.Yes)
         else:
             QMessageBox.warning(self, '提示', f"操作失败, 错误码:{code},信息：{msg}", QMessageBox.Yes)
         self.getCurrentPositionInfo()
 
-        self.enableAllButton()
 
 
     def closePosition(self):
