@@ -3,7 +3,7 @@
 #date: 2023-11-3
 
 from pprint import pprint
-from binance.spot import Spot
+# from binance.spot import Spot
 # from binance.cm_futures import CMFutures
 import logging
 from binance.um_futures import UMFutures
