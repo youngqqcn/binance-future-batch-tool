@@ -303,7 +303,7 @@ class Widget(QWidget):
     def LoadTarget(self):
         print('LoadTarget')
         #从数据库获取Target信息，类似表格表格数据
-        self.targetlist = self.loadTokenFromDatabase()
+        self.targetlist = self.loadTokenAsTableviewTargets()
         print(self.targetlist)
 
         # 列头，用数字表述
@@ -369,7 +369,22 @@ class Widget(QWidget):
         else:
             print("数据库已经存在")
 
-    def loadTokenFromDatabase(self):
+    def loadTokens(self):
+        """加载代币"""
+        query = QSqlQuery(self.db)
+        if not query.exec("""SELECT * from tb_tokenlist WHERE 1=1"""):
+            print("查询tb_tokenlist失败")
+
+        tokens = []
+        while query.next():
+            t = query.value("token")
+            print(t)
+            tokens.append(t)
+
+        print(tokens)
+        return tokens
+
+    def loadTokenAsTableviewTargets(self):
         """从数据库中加载tokenlist"""
 
         query = QSqlQuery(self.db)
@@ -562,7 +577,7 @@ class Widget(QWidget):
                     return False
 
          # 将所有币对,切换到逐仓模式
-        tokens = self.loadTokenFromDatabase()
+        tokens = self.loadTokens()
         for t in tokens:
             symbol = t + 'USDT'
             if not self.bnUmWrapper.changeMarginTypeToIsolated(symbol=symbol):
@@ -755,7 +770,7 @@ class CreateOrderThread(QThread):
             except Exception as e:
                 logging.error("error: {}".format(e))
                 pass
-            
+
             count += 1
 
         self.finishSignal.emit( count,  0, '')
