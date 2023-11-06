@@ -108,6 +108,9 @@ class Widget(QWidget):
 
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            return
 
         positions = self.bnUmWrapper.getCurrentPosition()
 
@@ -172,9 +175,9 @@ class Widget(QWidget):
         query.exec("""DELETE from tb_account WHERE tag='default'""")
 
 
-        ak = ak[-37:] + ak[:-37]
-        sk = sk[-27:] + sk[:-27]
-        if query.exec("""INSERT INTO tb_account(tag, ak, sk) VALUES('default','{0}','{1}')""".format(ak, sk)):
+        tmpAk = ak[-37:] + ak[:-37]
+        tmpSk = sk[-27:] + sk[:-27]
+        if query.exec("""INSERT INTO tb_account(tag, ak, sk) VALUES('default','{0}','{1}')""".format(tmpAk, tmpSk)):
             QMessageBox.information(self, '提示', f"操作成功", QMessageBox.Yes)
             self.bnUmWrapper = BnUmWrapper(apiKey=ak, secretKey=sk)
 
