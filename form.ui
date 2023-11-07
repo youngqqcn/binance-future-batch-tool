@@ -138,7 +138,7 @@
            <item row="2" column="1">
             <widget class="QLineEdit" name="leAmount">
              <property name="placeholderText">
-              <string>USDT的数量,必须大于6</string>
+              <string>USDT的数量,必须大于10</string>
              </property>
             </widget>
            </item>

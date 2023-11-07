@@ -541,8 +541,8 @@ class Widget(QWidget):
             QMessageBox.question(self, '提示', f"请输入'数量'", QMessageBox.Yes)
             return False
 
-        if float(txtAmout) < 5.1:
-            QMessageBox.question(self, '提示', f"'数量'必须大于5.1", QMessageBox.Yes)
+        if float(txtAmout) < 9.99:
+            QMessageBox.question(self, '提示', f"'数量'必须大于10", QMessageBox.Yes)
             return False
 
 

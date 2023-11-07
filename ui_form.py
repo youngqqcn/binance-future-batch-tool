@@ -213,7 +213,7 @@ class Ui_Widget(object):
         self.label_2.setText(QCoreApplication.translate("Widget", u"\u6b62\u635f:", None))
         self.leStopLossRatio.setPlaceholderText(QCoreApplication.translate("Widget", u"\u80fd\u627f\u53d7\u4e8f\u635f\u7684\u767e\u5206\u6bd4", None))
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u6570\u91cf:", None))
-        self.leAmount.setPlaceholderText(QCoreApplication.translate("Widget", u"USDT\u7684\u6570\u91cf,\u5fc5\u987b\u5927\u4e8e6", None))
+        self.leAmount.setPlaceholderText(QCoreApplication.translate("Widget", u"USDT\u7684\u6570\u91cf,\u5fc5\u987b\u5927\u4e8e10", None))
         self.btnMakeShort.setText(QCoreApplication.translate("Widget", u"\u5f00\u7a7a", None))
         self.btnMakeLong.setText(QCoreApplication.translate("Widget", u"\u5f00\u591a", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("Widget", u"\u4ea4\u6613\u5bf9\u7ba1\u7406:", None))
