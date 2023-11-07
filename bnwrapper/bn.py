@@ -100,6 +100,7 @@ class  BnUmWrapper(object):
                 break
         return self.um_futures_client.change_leverage(symbol=symbol, leverage=leverage)
 
+
     def getLatestPrice(self, symbol):
          # 获取最新价格，来计算下单数量, 不用标记价格
         ret = self.um_futures_client.ticker_price(symbol=symbol)
@@ -267,8 +268,11 @@ def main():
 
     # print( bn.getAccountBalance(symbol='USDT') )
     print('==================')
+    # pprint(bn.getPrecision('BTCUSDT'))
+    pprint(bn.um_futures_client.exchange_info())
+
     # pprint(bn.createNewOrders(5.5, 'RENUSDT', 'SELL', 0.05, 2))
-    pprint(bn.getCurrentPosition())
+    # pprint(bn.getCurrentPosition())
     # pprint(bn.getOpenOrders())
     # pprint(bn.changeMarginTypeToIsolated('RENUSDT'))
     # pprint(bn.changeLeverage(symbol='RENUSDT', leverage=2))

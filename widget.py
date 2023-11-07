@@ -686,6 +686,8 @@ class Widget(QWidget):
         self.enableAllButton()
         if code == 0:
             QMessageBox.information(self, "提示", f"下单{count}笔成功!", QMessageBox.Yes)
+        elif code == -4028:
+            QMessageBox.warning(self, '提示', f"成功下单{count}笔,第{count+1}笔失败, 错误码:{code},信息：杠杆倍数无效，超过最大倍数,{msg}", QMessageBox.Yes)
         else:
             QMessageBox.warning(self, '提示', f"成功下单{count}笔,第{count+1}笔失败, 错误码:{code},信息：{msg}", QMessageBox.Yes)
 
