@@ -200,6 +200,7 @@ class  BnUmWrapper(object):
         if len(positions) == 0:
             return
         logging.info('当前仓位:{}'.format(positions))
+
         for pos in positions:
             closeSide = 'BUY' if pos['side'] == 'SELL' else 'SELL'
 
@@ -216,7 +217,13 @@ class  BnUmWrapper(object):
 
             closePositionsOrders.append(order)
 
-        self.um_futures_client.new_batch_order(batchOrders=closePositionsOrders)
+            # 最多5个
+            if len(closePositionsOrders) >= 5:
+                self.um_futures_client.new_batch_order(batchOrders=closePositionsOrders)
+                closePositionsOrders = []
+
+        if len(closePositionsOrders) > 0:
+            self.um_futures_client.new_batch_order(batchOrders=closePositionsOrders)
         pass
 
 
