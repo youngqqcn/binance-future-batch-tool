@@ -67,11 +67,16 @@ class Widget(QWidget):
 
         # amount validator
         amountVal = QDoubleValidator()
-        amountVal.setRange(6, 1000)
+        amountVal.setRange(1, 1000)
         self.ui.leAmount.setValidator(amountVal)
 
 
         self.ui.leToken.textChanged.connect(self.autoCapitalize)
+
+        self.ui.lbPosition.setStyleSheet("color: #FFFFFF")
+        self.ui.leAmount.textEdited.connect(self.updatePositionTip)
+        self.ui.leLeverage.textEdited.connect(self.updatePositionTip)
+
 
         # 默认U本位
         self.ui.rbtnUsdtBase.setChecked(True)
@@ -104,6 +109,26 @@ class Widget(QWidget):
         self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
 
         pass
+
+    def updatePositionTip(self, txt):
+        """更新可开仓位数据"""
+
+        txtAmount = self.ui.leAmount.text()
+        txtLeverage = self.ui.leLeverage.text()
+
+        if len(txtAmount) > 0 and len(txtLeverage) > 0:
+            position = float(txtAmount) * float(txtLeverage)
+            if position >= 10:
+                position = '%.1f'%position
+                self.ui.lbPosition.setText('实际仓位: {} USDT'.format(position))
+                self.ui.lbPosition.setStyleSheet("color: #000000")
+            else:
+                position = '%.1f'%position
+                self.ui.lbPosition.setText('仓位无效! {} USDT'.format(position))
+                self.ui.lbPosition.setStyleSheet("color: #FF0000")
+
+        pass
+
 
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
@@ -485,12 +510,14 @@ class Widget(QWidget):
             errText = query.lastError().text()
             QMessageBox.warning(self, '错误',f"{token}删除失败: {errText}", QMessageBox.Yes)
 
+
         # 更新界面
         self.LoadTarget()
+        self.ui.leToken.setText('')
 
 
 
-    def checkOrderData(self):
+    def checkOrderData(self, side: str):
         """检查订单参数"""
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
@@ -513,15 +540,15 @@ class Widget(QWidget):
                 return False
 
         # 有效性检查:
-        txType = ''
-        if self.ui.rbtnUsdtBase.isChecked():
-            txType = 'U'
-        else:
-            txType = '币'
+        # txType = ''
+        # if self.ui.rbtnUsdtBase.isChecked():
+        #     txType = 'U'
+        # else:
+        #     txType = '币'
 
-        if not self.ui.rbtnTokenBase.isChecked() and not self.ui.rbtnUsdtBase.isChecked():
-            QMessageBox.question(self, '提示', f"请选择'类型'", QMessageBox.Yes)
-            return False
+        # if not self.ui.rbtnTokenBase.isChecked() and not self.ui.rbtnUsdtBase.isChecked():
+        #     QMessageBox.question(self, '提示', f"请选择'类型'", QMessageBox.Yes)
+        #     return False
 
         # 检查杠杆倍数
         txtLeverage = self.ui.leLeverage.text()
@@ -547,8 +574,10 @@ class Widget(QWidget):
 
 
         # 下单数据确认
+        sideTip = '空' if side == 'SELL' else '多'
+        positionAmount = '%.1f' %( float(txtAmout) * float(txtLeverage))
         if True:
-            tips = f"\n一共{len(symbols)}个币种\n类型: {txType}本位\n倍数: {txtLeverage}\n止损:{txtStoplossRatio}%\n数量:{txtAmout}"
+            tips = f"\n一共{len(symbols)}个交易对\n类型: U本位\n方向: {sideTip}\n杠杆: {txtLeverage}x\n止损:{txtStoplossRatio}%\n仓位: {positionAmount} USDT"
             r = QMessageBox.question(self, '下单参数确认', tips, QMessageBox.Yes, QMessageBox.No)
             if r == QMessageBox.No:
                 return False
@@ -630,7 +659,7 @@ class Widget(QWidget):
 
             assert side in ['BUY', 'SELL']
 
-            if not self.checkOrderData():
+            if not self.checkOrderData(side):
                 return
 
             symbols = self.getSelectedSymbols()
