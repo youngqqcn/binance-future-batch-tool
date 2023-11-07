@@ -121,7 +121,7 @@ class  BnUmWrapper(object):
         """
         创建新订单
         Args:
-            usdtQuantity (float): usdt数量,会自动换算成币的数量
+            usdtQuantity (float): usdt数量,会自动换算成币的数量( 实际仓位 = usdt数量 * 杠杆倍数 / 币价)
             symbol (str): 交易对, 例如: BTCUSDT
             side (str):  下单方向, 开多: BUY  ;  开空: SELL
             stopRatio (float):  市价止损单,价格浮动百分比, 达到这个价格就市价止损
@@ -129,7 +129,7 @@ class  BnUmWrapper(object):
         """
 
 
-        assert usdtQuantity > 5  , '无效参数, usdtQuantity {}'.format(usdtQuantity)
+        assert usdtQuantity * leverage > 10  , '无效参数, usdtQuantity {}'.format(usdtQuantity)
         assert side in ['BUY', 'SELL'], '无效参数 side {}'.format(side)
         assert  'USDT' in symbol and len(symbol) > 5 , '无效参数 symbol, {}'.format(symbol)
         assert 0 < stopRatio < 0.9, '无效止损： {}'.format(stopRatio)
@@ -143,7 +143,7 @@ class  BnUmWrapper(object):
         qp, pp = self.getPrecision(symbol=symbol)
 
         # 下单的数量，币的数量
-        tokenQuantity = usdtQuantity/latestPrice
+        tokenQuantity = (usdtQuantity * leverage) / latestPrice
         quantity = f"%.{qp}f"%tokenQuantity
         logging.info('quantity=====>{}'.format( quantity))
 
