@@ -6,9 +6,10 @@ from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageB
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
 from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
 from PySide6.QtCore import QItemSelectionModel
-from PySide6.QtCore import Qt,QThread, Signal
+from PySide6.QtCore import Qt,QThread, Signal, QTimer
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtWidgets import QApplication, QDialog, QProgressBar, QVBoxLayout, QPushButton
+from traceback import print_exc
 
 
 
@@ -29,7 +30,7 @@ class Widget(QWidget):
         self.ui.setupUi(self)
 
 
-        self.setWindowTitle("合约一键下单工具v1.0")
+        self.setWindowTitle("合约批量下单工具v1.5-2023-11-08")
         self.setWindowIcon(QIcon('logo.png'))
         #self.resize(800, 600)
 
@@ -77,9 +78,27 @@ class Widget(QWidget):
         self.ui.leAmount.textEdited.connect(self.updatePositionTip)
         self.ui.leLeverage.textEdited.connect(self.updatePositionTip)
 
+        self.ui.lbAvailMargin.setText('总余额: 0U , 可用: 0U')
+        self.ui.lbAvailMargin.setStyleSheet("color: #FF0000")
+
 
         # 默认U本位
         self.ui.rbtnUsdtBase.setChecked(True)
+
+        # 定时更新可用保证金
+        self.timerUpdateAvailMargin = QTimer(self)
+        self.timerUpdateAvailMargin.timeout.connect(self.updateAvailMargin)
+        self.timerUpdateAvailMargin.setInterval(5000)
+        self.timerUpdateAvailMargin.start()
+        self.timerUpdateAvailMargin.timeout.emit()
+
+
+        # 更新当前仓位
+        self.timerGetCurrentPosition = QTimer(self)
+        self.timerGetCurrentPosition.timeout.connect(self.getCurrentPositionInfo)
+        self.timerGetCurrentPosition.setInterval(1000)
+        self.timerGetCurrentPosition.start()
+        self.timerGetCurrentPosition.timeout.emit()
 
 
         # 开多
@@ -106,7 +125,27 @@ class Widget(QWidget):
         self.ui.btnClosePosition.clicked.connect( self.closePosition)
 
         # 获取当前仓位
-        self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
+        # self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
+
+        pass
+
+    def updateAvailMargin(self):
+
+        try:
+            if self.bnUmWrapper is None:
+                QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+
+                # 停止定时器
+                self.timerUpdateAvailMargin.stop()
+                return
+
+            t, a = self.bnUmWrapper.getTokenBalance('USDT')
+            txt = '总余额: {}U , 可用: {}U'.format('%.1f'%t, '%.1f'%a)
+            logging.info("当前usdt可用保证金:{}".format(txt))
+            self.ui.lbAvailMargin.setText(txt)
+        except Exception as e:
+            logging.error(e)
+            pass
 
         pass
 
@@ -134,6 +173,10 @@ class Widget(QWidget):
         """获取仓位信息"""
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.timerGetCurrentPosition.timeout.disconnect(self.getCurrentPositionInfo)
+
+            # 停止定时器
+            self.timerGetCurrentPosition.stop()
             return
 
         positions = self.bnUmWrapper.getCurrentPosition()
@@ -141,7 +184,7 @@ class Widget(QWidget):
 
 
         # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
-        headers = ['交易对', '模式', '方向', '保证金($)', '杠杆倍数', '数量(币)', '估值($)', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)', '盈亏率']
+        headers = ['交易对', '模式', '方向', '保证金($)', '杠杆', '数量(币)', '估值($)', '开仓价','标记价', '强平价', '盈亏($)', '盈亏率']
         self.posModel = QStandardItemModel(len(positions), len(headers), self)
         self.posModel.setHorizontalHeaderLabels(headers)
 
@@ -170,7 +213,7 @@ class Widget(QWidget):
 
             amt = str(positions[row]['positionAmt']).replace('-', '')
             self.posModel.setItem(row, 5, QStandardItem( str(amt)))
-            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['notional'] )))
+            self.posModel.setItem(row, 6, QStandardItem( '%.1f'%float( str(positions[row]['notional'] ))))
 
             self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['entryPrice'] )))
             self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['markPrice'] )))
@@ -188,7 +231,7 @@ class Widget(QWidget):
 
 
             # 盈亏
-            roi = float(profit) / (float( positions[row]['notional']) + 0.000001)  * float(positions[row]['leverage'])
+            roi = float(profit) / (abs(float(positions[row]['notional'])) + 0.000001)  * float(positions[row]['leverage'])
             roi = '%.2f' % (roi * 100 )
             roi += '%'
             rItem = QStandardItem( roi )
@@ -224,14 +267,14 @@ class Widget(QWidget):
         tmpAk = ak[-37:] + ak[:-37]
         tmpSk = sk[-27:] + sk[:-27]
         if query.exec("""INSERT INTO tb_account(tag, ak, sk) VALUES('default','{0}','{1}')""".format(tmpAk, tmpSk)):
-            QMessageBox.information(self, '提示', f"操作成功", QMessageBox.Yes)
+            QMessageBox.information(self, '提示', f"操作成功, 需要重启程序生效", QMessageBox.Yes)
             self.bnUmWrapper = BnUmWrapper(apiKey=ak, secretKey=sk)
 
             self.ui.leApiKey.setText('')
             self.ui.leSecretKey.setText('')
 
-
-
+            # 关闭
+            self.close()
         else:
             QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
 
@@ -609,9 +652,10 @@ class Widget(QWidget):
         if True:
             usdtAmount = float(self.ui.leAmount.text())
             totalBalance = len(symbols) * usdtAmount
-            usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
-            if usdtBalance - totalBalance < 0.01 * len(symbols):
-                QMessageBox.question(self, '提示', f"当前账户可用USDT余额{usdtBalance}不足, 请充值后重试!", QMessageBox.Yes)
+            totalUsdt, availUsdt= self.bnUmWrapper.getTokenBalance(token='USDT')
+            logging.info("总USDT余额:{}, 可用USDT余额{}".format(totalUsdt, availUsdt))
+            if availUsdt - totalBalance < 0.1 * len(symbols):
+                QMessageBox.question(self, '提示', f"当前账户可用USDT余额{availUsdt}不足, 请充值后重试!", QMessageBox.Yes)
                 return False
 
         # 风险提醒
@@ -624,7 +668,7 @@ class Widget(QWidget):
                 r = QMessageBox.question(self, '提示', f"{txtStoplossRatio}% 止损率过高, 当亏损超过{txtStoplossRatio}%才会出发止损, 是否继续？", QMessageBox.Yes, QMessageBox.No)
                 if r == QMessageBox.No:
                     return False
-            if self.ui.rbtnUsdtBase.isChecked() and int(txtAmout) > 100:
+            if self.ui.rbtnUsdtBase.isChecked() and float(txtAmout) > 100:
                 r = QMessageBox.question(self, '提示', f"数量{txtAmout}, 较大, 是否继续？", QMessageBox.Yes, QMessageBox.No)
                 if r == QMessageBox.No:
                     return False
@@ -708,6 +752,8 @@ class Widget(QWidget):
 
         except Exception as e:
             logging.error(" error:  {}".format(e))
+            print_exc(e)
+
             self.enableAllButton()
             pass
 

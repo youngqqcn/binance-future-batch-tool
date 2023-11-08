@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1473</width>
+    <width>1465</width>
     <height>768</height>
    </rect>
   </property>
@@ -218,6 +218,19 @@
        <string>类型:</string>
       </property>
      </widget>
+     <widget class="QLabel" name="lbAvailMargin">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>40</y>
+        <width>231</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="geometry">
@@ -294,35 +307,22 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>1251</width>
+       <width>1281</width>
        <height>671</height>
       </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btnGetCurrentPosition">
-     <property name="geometry">
-      <rect>
-       <x>1280</x>
-       <y>170</y>
-       <width>151</width>
-       <height>61</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>获取当前所有仓位</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btnClosePosition">
      <property name="geometry">
       <rect>
-       <x>1280</x>
-       <y>270</y>
-       <width>161</width>
-       <height>61</height>
+       <x>1300</x>
+       <y>330</y>
+       <width>121</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
-      <string>一键全部平仓</string>
+      <string>一键市价全平</string>
      </property>
     </widget>
    </widget>

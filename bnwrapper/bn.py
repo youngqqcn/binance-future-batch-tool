@@ -62,15 +62,14 @@ class  BnUmWrapper(object):
     def getTokenBalance(self, token: str):
         """获取指定代币的余额"""
 
-        if 'USDT' in token:
-            token = token.replace('USDT', '')
-
         # Get account and balance information
         ret = self.um_futures_client.balance()
+        # logging.info(ret)
+
         for x in ret:
             if x['asset'] == token:
-                return float(x['balance'])
-        return 0
+                return float(x['balance']), float(x['availableBalance'])
+        return 0, 0
 
     def getPrecision(self, symbol):
         """获取精度, 返回数量精度，价格精度"""
