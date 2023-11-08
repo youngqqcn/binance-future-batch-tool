@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1394</width>
-    <height>754</height>
+    <width>1473</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>10</y>
-     <width>1361</width>
-     <height>721</height>
+     <width>1451</width>
+     <height>731</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -34,15 +34,15 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>1011</width>
-       <height>651</height>
+       <width>1111</width>
+       <height>671</height>
       </rect>
      </property>
     </widget>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
-       <x>1040</x>
+       <x>1140</x>
        <y>230</y>
        <width>301</width>
        <height>371</height>
@@ -222,7 +222,7 @@
     <widget class="QGroupBox" name="groupBox_3">
      <property name="geometry">
       <rect>
-       <x>1040</x>
+       <x>1140</x>
        <y>40</y>
        <width>301</width>
        <height>121</height>
@@ -294,15 +294,15 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>1111</width>
-       <height>651</height>
+       <width>1251</width>
+       <height>671</height>
       </rect>
      </property>
     </widget>
     <widget class="QPushButton" name="btnGetCurrentPosition">
      <property name="geometry">
       <rect>
-       <x>1150</x>
+       <x>1280</x>
        <y>170</y>
        <width>151</width>
        <height>61</height>
@@ -315,7 +315,7 @@
     <widget class="QPushButton" name="btnClosePosition">
      <property name="geometry">
       <rect>
-       <x>1150</x>
+       <x>1280</x>
        <y>270</y>
        <width>161</width>
        <height>61</height>

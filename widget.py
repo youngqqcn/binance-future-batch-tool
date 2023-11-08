@@ -137,10 +137,11 @@ class Widget(QWidget):
             return
 
         positions = self.bnUmWrapper.getCurrentPosition()
+        logging.info(positions)
 
 
         # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
-        headers = ['交易对', '保证金模式', '方向', '杠杆倍数', '数量(币)', '估值($)', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)']
+        headers = ['交易对', '模式', '方向', '保证金($)', '杠杆倍数', '数量(币)', '估值($)', '开仓价','当前标记价', '预估强平价', '未实现盈亏($)', '盈亏率']
         self.posModel = QStandardItemModel(len(positions), len(headers), self)
         self.posModel.setHorizontalHeaderLabels(headers)
 
@@ -159,25 +160,45 @@ class Widget(QWidget):
                 tmpItem.setForeground(QBrush(QColor(1, 150, 40)))
             self.posModel.setItem(row, 2, tmpItem)
 
-            self.posModel.setItem(row, 3, QStandardItem( str(positions[row]['leverage'] + 'x' )))
+
+
+            # 保证金
+            self.posModel.setItem(row, 3, QStandardItem('%.2f' % float( str(positions[row]['isolatedWallet']  ))))
+
+
+            self.posModel.setItem(row, 4, QStandardItem( str(positions[row]['leverage'] + 'x' )))
 
             amt = str(positions[row]['positionAmt']).replace('-', '')
-            self.posModel.setItem(row, 4, QStandardItem( str(amt)))
-            self.posModel.setItem(row, 5, QStandardItem( str(positions[row]['notional'] )))
+            self.posModel.setItem(row, 5, QStandardItem( str(amt)))
+            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['notional'] )))
 
-            self.posModel.setItem(row, 6, QStandardItem( str(positions[row]['entryPrice'] )))
-            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['markPrice'] )))
-            self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['liquidationPrice'] )))
+            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['entryPrice'] )))
+            self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['markPrice'] )))
+            self.posModel.setItem(row, 9, QStandardItem( str(positions[row]['liquidationPrice'] )))
 
 
-            profit = str(positions[row]['unRealizedProfit'] )
+            profit = '%.2f'%float(str(positions[row]['unRealizedProfit'] ))
             xItem = QStandardItem( profit )
             if float(profit) < 0:
                 xItem.setForeground(QBrush(QColor(189, 14, 3)))
             else:
                 xItem = QStandardItem( '+' + profit )
                 xItem.setForeground(QBrush(QColor(1, 150, 40)))
-            self.posModel.setItem(row, 9, xItem)
+            self.posModel.setItem(row, 10, xItem)
+
+
+            # 盈亏
+            roi = float(profit) / (float( positions[row]['notional']) + 0.000001)  * float(positions[row]['leverage'])
+            roi = '%.2f' % (roi * 100 )
+            roi += '%'
+            rItem = QStandardItem( roi )
+            if float(profit) < 0:
+                rItem.setForeground(QBrush(QColor(189, 14, 3)))
+            else:
+                rItem = QStandardItem( '+' + roi )
+                rItem.setForeground(QBrush(QColor(1, 150, 40)))
+            self.posModel.setItem(row, 11, rItem)
+
 
         self.ui.tableViewCurPositions.setModel(self.posModel)
         self.ui.tableViewCurPositions.show()
@@ -609,9 +630,8 @@ class Widget(QWidget):
                     return False
 
          # 将所有币对,切换到逐仓模式
-        tokens = self.loadTokens()
-        for t in tokens:
-            symbol = t + 'USDT'
+        symbols = self.getSelectedSymbols()
+        for symbol in symbols:
             if not self.bnUmWrapper.changeMarginTypeToIsolated(symbol=symbol):
                 # query.exec("""DELETE from tb_tokenlist WHERE token='{0}'""".format(t))
                 QMessageBox.warning(self, '提示', f"切换{symbol}交易对到逐仓模式失败,请联系管理员!", QMessageBox.Yes)
