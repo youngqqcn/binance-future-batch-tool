@@ -166,7 +166,7 @@ class Ui_Widget(object):
 
         self.retranslateUi(Widget)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(Widget)
@@ -205,6 +205,6 @@ class Ui_Widget(object):
         self.label_6.setText(QCoreApplication.translate("Widget", u"API \u5bc6\u94a5:", None))
         self.label_7.setText(QCoreApplication.translate("Widget", u"\u5bc6\u94a5\uff1a", None))
         self.btnSaveApiKeySecret.setText(QCoreApplication.translate("Widget", u"\u4fdd\u5b58\u914d\u7f6e", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("Widget", u"\u5bc6\u94a5\u7ba1\u7406", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("Widget", u"API\u5bc6\u94a5\u7ba1\u7406", None))
     # retranslateUi
 

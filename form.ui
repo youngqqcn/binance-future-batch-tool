@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -408,7 +408,7 @@
    </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
-     <string>密钥管理</string>
+     <string>API密钥管理</string>
     </attribute>
     <widget class="QLineEdit" name="leApiKey">
      <property name="geometry">
