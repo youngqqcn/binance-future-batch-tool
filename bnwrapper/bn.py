@@ -184,6 +184,7 @@ class  BnUmWrapper(object):
 
         response = self.um_futures_client.new_batch_order(batchOrders=orders)
         logging.info(response)
+        return response
 
 
 

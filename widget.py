@@ -175,6 +175,7 @@ class Widget(QWidget):
             if float(profit) < 0:
                 xItem.setForeground(QBrush(QColor(189, 14, 3)))
             else:
+                xItem = QStandardItem( '+' + profit )
                 xItem.setForeground(QBrush(QColor(1, 150, 40)))
             self.posModel.setItem(row, 9, xItem)
 
@@ -588,7 +589,7 @@ class Widget(QWidget):
             usdtAmount = float(self.ui.leAmount.text())
             totalBalance = len(symbols) * usdtAmount
             usdtBalance = self.bnUmWrapper.getTokenBalance(token='USDT')
-            if totalBalance - usdtBalance  < 0.1 * len(symbols):
+            if usdtBalance - totalBalance < 0.01 * len(symbols):
                 QMessageBox.question(self, '提示', f"当前账户可用USDT余额{usdtBalance}不足, 请充值后重试!", QMessageBox.Yes)
                 return False
 
@@ -819,13 +820,16 @@ class CreateOrderThread(QThread):
         count = 0
         for symbol in self.symbols:
             try:
-                self.bnUmWrapper.createNewOrders(
+                resp = self.bnUmWrapper.createNewOrders(
                         usdtQuantity=self.usdtAmount,
                         symbol=symbol,
                         side=self.side,
                         stopRatio=self.stopRatio,
                         leverage=self.leverage
                     )
+                if resp is not None:
+                    if 'code' in resp[0] and resp[0]['code'] != 0:
+                        raise ClientError(resp[0]['code'],resp[0]['code'], resp[0]['msg'], None )
             except ClientError as error:
                 logging.error("Found error. status: {}, error code: {}, error message: {}".format(
                     error.status_code, error.error_code, error.error_message))
