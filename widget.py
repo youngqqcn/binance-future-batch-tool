@@ -24,6 +24,10 @@ from ui_form import Ui_Widget
 from bnwrapper.bn import BnUmWrapper
 from binance.error import ClientError
 
+EXIT_CODE_REBOOT = 3372937
+gApp = None
+
+
 class Widget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -155,6 +159,12 @@ class Widget(QWidget):
         """获取当前委托单"""
 
         try:
+            if self.bnUmWrapper is None:
+                # 停止定时器
+                self.timerGetCurrentOpenOrders.stop()
+                # QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+                return
+
 
             orders = self.bnUmWrapper.getOpenOrders()
 
@@ -247,6 +257,7 @@ class Widget(QWidget):
 
 
     def decreaseMargin(self):
+
         """减少保证金"""
         a = self.ui.leAdjustMarginAmount.text()
         a = float(a) * -1
@@ -258,8 +269,14 @@ class Widget(QWidget):
         a = float(a)
         self.__adjustMargin(a)
 
+
     def __adjustMargin(self, amount):
         """调整保证金"""
+        if self.bnUmWrapper is None:
+            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.ui.tabWidget.setCurrentIndex(3)
+            return
+
         symbols = self.getSelectedSymbols()
         if len(symbols) == 0:
             QMessageBox.warning(self, '提示', f"请选择币种", QMessageBox.Yes)
@@ -310,10 +327,11 @@ class Widget(QWidget):
 
         try:
             if self.bnUmWrapper is None:
-                QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
-
                 # 停止定时器
                 self.timerUpdateAvailMargin.stop()
+                QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+                self.ui.tabWidget.setCurrentIndex(3)
+
                 return
 
             t, a = self.bnUmWrapper.getTokenBalance('USDT')
@@ -353,11 +371,10 @@ class Widget(QWidget):
     def getCurrentPositionInfo(self):
         """获取仓位信息"""
         if self.bnUmWrapper is None:
-            QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
-            self.timerGetCurrentPosition.timeout.disconnect(self.getCurrentPositionInfo)
+            self.timerGetCurrentPosition.stop()
+            # QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
 
             # 停止定时器
-            self.timerGetCurrentPosition.stop()
             return
 
         try:
@@ -459,7 +476,9 @@ class Widget(QWidget):
             self.ui.leSecretKey.setText('')
 
             # 关闭
-            self.close()
+            # self.close()
+            # 重启
+            gApp.exit(EXIT_CODE_REBOOT)
         else:
             QMessageBox.warning(self, '提示', f"操作失败", QMessageBox.Yes)
 
@@ -693,6 +712,7 @@ class Widget(QWidget):
         """添加币种"""
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.ui.tabWidget.setCurrentIndex(3)
             return
 
         token = self.ui.leToken.text()
@@ -743,6 +763,7 @@ class Widget(QWidget):
 
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.ui.tabWidget.setCurrentIndex(3)
             return
 
         token = self.ui.leToken.text()
@@ -771,6 +792,7 @@ class Widget(QWidget):
         """检查订单参数"""
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.ui.tabWidget.setCurrentIndex(3)
             return
 
         # 是否选择了币种
@@ -990,6 +1012,7 @@ class Widget(QWidget):
 
         if self.bnUmWrapper is None:
             QMessageBox.warning(self, '提示', f"请先添加账户API密钥", QMessageBox.Yes)
+            self.ui.tabWidget.setCurrentIndex(3)
             return
 
         print("市价全平，并撤销所有委托单")
@@ -1103,7 +1126,16 @@ class CreateOrderThread(QThread):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    widget = Widget()
-    widget.show()
-    sys.exit(app.exec())
+    exitCode = 0
+    while True:
+        try:
+            gApp = QApplication(sys.argv)
+        except RuntimeError:
+            gApp = QApplication.instance()
+        widget = Widget()
+        widget.show()
+        exitCode = gApp.exec()
+        if exitCode != EXIT_CODE_REBOOT:
+            break
+
+    sys.exit(exitCode)
