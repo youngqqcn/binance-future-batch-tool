@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import logging
 import sys
+import time
 from typing import List
 from PySide6.QtWidgets import QApplication, QWidget, QAbstractItemView,QMessageBox
 from PySide6.QtGui import QIntValidator,QDoubleValidator,QStandardItemModel, QRegularExpressionValidator
@@ -8,7 +9,7 @@ from PySide6.QtGui import  QStandardItem, QBrush, QColor, QIcon
 from PySide6.QtCore import QItemSelectionModel
 from PySide6.QtCore import Qt,QThread, Signal, QTimer
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from PySide6.QtWidgets import QApplication, QDialog, QProgressBar, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QApplication, QDialog, QProgressBar, QVBoxLayout, QPushButton,QHeaderView
 from traceback import print_exc
 
 
@@ -30,7 +31,7 @@ class Widget(QWidget):
         self.ui.setupUi(self)
 
 
-        self.setWindowTitle("合约批量下单工具v1.5-2023-11-08")
+        self.setWindowTitle("合约批量下单工具v1.6-2023-11-08")
         self.setWindowIcon(QIcon('logo.png'))
         self.setFixedSize(self.width(), self.height())
         #self.resize(800, 600)
@@ -109,6 +110,14 @@ class Widget(QWidget):
         self.timerGetCurrentPosition.timeout.emit()
 
 
+        # 获取当前委托单
+        self.timerGetCurrentOpenOrders = QTimer(self)
+        self.timerGetCurrentPosition.timeout.connect(self.getCurrentOpenOrders)
+        self.timerGetCurrentPosition.setInterval(6000)
+        self.timerGetCurrentPosition.start()
+        self.timerGetCurrentPosition.timeout.emit()
+
+
         # 开多
         self.ui.btnMakeLong.clicked.connect(self.makeLong)
 
@@ -141,6 +150,101 @@ class Widget(QWidget):
         # 追加保证金
         self.ui.btnIncreaseMargin.clicked.connect(self.increaseMargin)
         pass
+
+    def getCurrentOpenOrders(self):
+        """获取当前委托单"""
+
+        try:
+
+            orders = self.bnUmWrapper.getOpenOrders()
+
+            if len(orders) == 0:
+                return
+
+            headers = ['交易对', '持仓模式', '方向', '订单类型', '平仓', '触发价($)','数量', '委托价($)',  '成交量',  '订单时间' ]
+            self.ordersModel = QStandardItemModel(len(orders), len(headers), self)
+            self.ordersModel.setHorizontalHeaderLabels(headers)
+
+            row = 0
+            for ord in orders:
+                # 交易对
+                self.ordersModel.setItem(row, 0, QStandardItem( ord['symbol'] ))
+
+                # 模式
+                posMode = ''
+                if ord['positionSide'] == 'BOTH':
+                    posMode = '单向'
+                elif ord['positionSide'] == 'LONG':
+                    posMode = '双向(多)'
+                elif ord['positionSide'] == 'SHORT':
+                    posMode = '双向(空)'
+                else:
+                    posMode = ''
+
+                self.ordersModel.setItem(row, 1, QStandardItem(posMode))
+
+
+                # 方向
+                tmpItem = QStandardItem( '买入(做多)' if  ord['side']  == 'BUY' else '卖出(做空)')
+                if ord['side'] == 'SELL':
+                    tmpItem.setForeground(QBrush(QColor(189, 14, 3)))
+                else:
+                    tmpItem.setForeground(QBrush(QColor(1, 150, 40)))
+                self.ordersModel.setItem(row, 2, tmpItem)
+
+
+                # 订单类型
+                orderType = '市价止损单'
+                if  ord['origType'] == 'STOP_MARKET':
+                    orderType = '市价止损单'
+                elif ord['origType'] == 'STOP':
+                    orderType = '限价止损单'
+                elif ord['origType'] == 'LIMIT':
+                    orderType = '限价单'
+                elif ord['origType'] == 'TAKE_PROFIT':
+                    orderType = '限价止盈单'
+                elif ord['origType'] == 'TAKE_PROFIT_MARKET':
+                    orderType = '市价止盈单'
+                elif ord['origType'] == 'TRAILING_STOP_MARKET':
+                    orderType = '跟踪止损市价单'
+                self.ordersModel.setItem(row, 3, QStandardItem(orderType))
+
+                # 平仓
+                self.ordersModel.setItem(row, 4, QStandardItem('全平' if ord['closePosition'] else '--'))
+
+                # 触发价
+                self.ordersModel.setItem(row, 5, QStandardItem(ord['stopPrice']))
+
+                # 数量
+                self.ordersModel.setItem(row, 6, QStandardItem(ord['origQty']))
+
+                # 委托价
+                self.ordersModel.setItem(row, 7, QStandardItem(ord['price']))
+
+
+                # 成交量
+                self.ordersModel.setItem(row, 8, QStandardItem(ord['executedQty']))
+
+
+                # 订单时间
+                tm = ord['time']
+                my_strftime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime( int(tm / 1000)))
+                self.ordersModel.setItem(row, 9, QStandardItem(my_strftime))
+
+                row += 1
+                pass
+
+
+            self.ui.tableViewCurrentOpenOrders.setModel(self.ordersModel)
+
+            # 内容自适应
+            self.ui.tableViewCurrentOpenOrders.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.ui.tableViewCurrentOpenOrders.horizontalHeader().setSectionResizeMode(9, QHeaderView.ResizeToContents)
+            self.ui.tableViewCurrentOpenOrders.show()
+        except Exception as e:
+            print_exc(e)
+            pass
+
 
     def decreaseMargin(self):
         """减少保证金"""
@@ -217,6 +321,7 @@ class Widget(QWidget):
             logging.info("当前usdt可用保证金:{}".format(txt))
             self.ui.lbAvailMargin.setText(txt)
         except Exception as e:
+            print_exc(e)
             logging.error(e)
             pass
 
@@ -225,19 +330,22 @@ class Widget(QWidget):
     def updatePositionTip(self, txt):
         """更新可开仓位数据"""
 
-        txtAmount = self.ui.leAmount.text()
-        txtLeverage = self.ui.leLeverage.text()
+        try:
+            txtAmount = self.ui.leAmount.text()
+            txtLeverage = self.ui.leLeverage.text()
 
-        if len(txtAmount) > 0 and len(txtLeverage) > 0:
-            position = float(txtAmount) * float(txtLeverage)
-            if position >= 10:
-                position = '%.1f'%position
-                self.ui.lbPosition.setText('实际仓位: {} USDT'.format(position))
-                self.ui.lbPosition.setStyleSheet("color: #000000")
-            else:
-                position = '%.1f'%position
-                self.ui.lbPosition.setText('仓位无效! {} USDT'.format(position))
-                self.ui.lbPosition.setStyleSheet("color: #FF0000")
+            if len(txtAmount) > 0 and len(txtLeverage) > 0:
+                position = float(txtAmount) * float(txtLeverage)
+                if position >= 10:
+                    position = '%.1f'%position
+                    self.ui.lbPosition.setText('实际仓位: {} USDT'.format(position))
+                    self.ui.lbPosition.setStyleSheet("color: #000000")
+                else:
+                    position = '%.1f'%position
+                    self.ui.lbPosition.setText('仓位无效! {} USDT'.format(position))
+                    self.ui.lbPosition.setStyleSheet("color: #FF0000")
+        except Exception as e:
+            print_exc(e)
 
         pass
 
@@ -252,73 +360,77 @@ class Widget(QWidget):
             self.timerGetCurrentPosition.stop()
             return
 
-        positions = self.bnUmWrapper.getCurrentPosition()
-        logging.info(positions)
+        try:
+            positions = self.bnUmWrapper.getCurrentPosition()
+            logging.info(positions)
 
 
-        # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
-        headers = ['交易对', '模式', '方向', '保证金($)', '杠杆', '数量(币)', '估值($)', '开仓价','标记价', '强平价', '盈亏($)', '盈亏率']
-        self.posModel = QStandardItemModel(len(positions), len(headers), self)
-        self.posModel.setHorizontalHeaderLabels(headers)
+            # 币种, 方向, 杠杆倍数， 建仓价格， 盈亏，
+            headers = ['交易对', '模式', '方向', '保证金($)', '杠杆', '数量(币)', '估值($)', '开仓价','标记价', '强平价', '盈亏($)', '盈亏率']
+            self.posModel = QStandardItemModel(len(positions), len(headers), self)
+            self.posModel.setHorizontalHeaderLabels(headers)
 
-        for row in range(len(positions)):
-            self.posModel.setItem(row, 0, QStandardItem( str(positions[row]['symbol'] )))
+            for row in range(len(positions)):
+                self.posModel.setItem(row, 0, QStandardItem( str(positions[row]['symbol'] )))
 
-            marginMode = '逐仓' if positions[row]['marginType'] == 'isolated' else '全仓'
-            self.posModel.setItem(row, 1, QStandardItem( str(marginMode )))
+                marginMode = '逐仓' if positions[row]['marginType'] == 'isolated' else '全仓'
+                self.posModel.setItem(row, 1, QStandardItem( str(marginMode )))
 
-            side = '空' if positions[row]['side'] == 'SELL' else '多'
-            tmpItem = QStandardItem( side)
-            if side == '空':
-                tmpItem.setForeground(QBrush(QColor(189, 14, 3)))
-            else:
-                # tmpItem.setForeground()
-                tmpItem.setForeground(QBrush(QColor(1, 150, 40)))
-            self.posModel.setItem(row, 2, tmpItem)
-
-
-
-            # 保证金
-            self.posModel.setItem(row, 3, QStandardItem('%.2f' % float( str(positions[row]['isolatedWallet']  ))))
+                side = '卖出(做空)' if positions[row]['side'] == 'SELL' else '买入(做多)'
+                tmpItem = QStandardItem( side)
+                if positions[row]['side'] == 'SELL':
+                    tmpItem.setForeground(QBrush(QColor(189, 14, 3)))
+                else:
+                    # tmpItem.setForeground()
+                    tmpItem.setForeground(QBrush(QColor(1, 150, 40)))
+                self.posModel.setItem(row, 2, tmpItem)
 
 
-            self.posModel.setItem(row, 4, QStandardItem( str(positions[row]['leverage'] + 'x' )))
 
-            amt = str(positions[row]['positionAmt']).replace('-', '')
-            self.posModel.setItem(row, 5, QStandardItem( str(amt)))
-            self.posModel.setItem(row, 6, QStandardItem( '%.1f'%float( str(positions[row]['notional'] ))))
-
-            self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['entryPrice'] )))
-            self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['markPrice'] )))
-            self.posModel.setItem(row, 9, QStandardItem( str(positions[row]['liquidationPrice'] )))
+                # 保证金
+                self.posModel.setItem(row, 3, QStandardItem('%.2f' % float( str(positions[row]['isolatedWallet']  ))))
 
 
-            profit = '%.2f'%float(str(positions[row]['unRealizedProfit'] ))
-            xItem = QStandardItem( profit )
-            if float(profit) < 0:
-                xItem.setForeground(QBrush(QColor(189, 14, 3)))
-            else:
-                xItem = QStandardItem( '+' + profit )
-                xItem.setForeground(QBrush(QColor(1, 150, 40)))
-            self.posModel.setItem(row, 10, xItem)
+                self.posModel.setItem(row, 4, QStandardItem( str(positions[row]['leverage'] + 'x' )))
+
+                amt = str(positions[row]['positionAmt']).replace('-', '')
+                self.posModel.setItem(row, 5, QStandardItem( str(amt)))
+                self.posModel.setItem(row, 6, QStandardItem( '%.1f'%float( str(positions[row]['notional'] ))))
+
+                self.posModel.setItem(row, 7, QStandardItem( str(positions[row]['entryPrice'] )))
+                self.posModel.setItem(row, 8, QStandardItem( str(positions[row]['markPrice'] )))
+                self.posModel.setItem(row, 9, QStandardItem( str(positions[row]['liquidationPrice'] )))
 
 
-            # 盈亏
-            roi = float(profit) / (abs(float(positions[row]['notional'])) + 0.000001)  * float(positions[row]['leverage'])
-            roi = '%.2f' % (roi * 100 )
-            roi += '%'
-            rItem = QStandardItem( roi )
-            if float(profit) < 0:
-                rItem.setForeground(QBrush(QColor(189, 14, 3)))
-            else:
-                rItem = QStandardItem( '+' + roi )
-                rItem.setForeground(QBrush(QColor(1, 150, 40)))
-            self.posModel.setItem(row, 11, rItem)
+                profit = '%.2f'%float(str(positions[row]['unRealizedProfit'] ))
+                xItem = QStandardItem( profit )
+                if float(profit) < 0:
+                    xItem.setForeground(QBrush(QColor(189, 14, 3)))
+                else:
+                    xItem = QStandardItem( '+' + profit )
+                    xItem.setForeground(QBrush(QColor(1, 150, 40)))
+                self.posModel.setItem(row, 10, xItem)
 
 
-        self.ui.tableViewCurPositions.setModel(self.posModel)
-        self.ui.tableViewCurPositions.show()
+                # 盈亏
+                roi = float(profit) / (abs(float(positions[row]['notional'])) + 0.000001)  * float(positions[row]['leverage'])
+                roi = '%.2f' % (roi * 100 )
+                roi += '%'
+                rItem = QStandardItem( roi )
+                if float(profit) < 0:
+                    rItem.setForeground(QBrush(QColor(189, 14, 3)))
+                else:
+                    rItem = QStandardItem( '+' + roi )
+                    rItem.setForeground(QBrush(QColor(1, 150, 40)))
+                self.posModel.setItem(row, 11, rItem)
 
+
+            self.ui.tableViewCurPositions.setModel(self.posModel)
+            self.ui.tableViewCurPositions.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.ui.tableViewCurPositions.show()
+        except Exception as e:
+            print(e)
+            print_exc(e)
 
         pass
 

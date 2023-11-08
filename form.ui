@@ -391,6 +391,21 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>当前委托</string>
+    </attribute>
+    <widget class="QTableView" name="tableViewCurrentOpenOrders">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>1421</width>
+       <height>691</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
      <string>密钥管理</string>
