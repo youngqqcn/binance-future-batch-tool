@@ -100,12 +100,12 @@ class  BnUmWrapper(object):
         return self.um_futures_client.change_leverage(symbol=symbol, leverage=leverage)
 
 
-    def getLatestPrice(self, symbol):
-         # 获取最新价格，来计算下单数量, 不用标记价格
-        ret = self.um_futures_client.ticker_price(symbol=symbol)
-        latestPrice = float(ret['price'])
-        logging.info(latestPrice)
-        return latestPrice
+    def getMarkPrice(self, symbol):
+         # 标记价格
+        ret = self.um_futures_client.mark_price(symbol=symbol)
+        markPrice = float(ret['markPrice'])
+        logging.info('当前标记价格:{}'.format( markPrice))
+        return markPrice
 
     def checkSingleSidePositionSide(self):
         """检查是否是单向持仓"""
@@ -137,21 +137,21 @@ class  BnUmWrapper(object):
         # 调整杠杆倍数
         self.changeLeverage(symbol=symbol, leverage=leverage)
 
-        latestPrice = self.getLatestPrice(symbol=symbol)
+        markPrice = self.getMarkPrice(symbol=symbol)
 
         qp, pp = self.getPrecision(symbol=symbol)
 
         # 下单的数量，币的数量
-        tokenQuantity = (usdtQuantity * leverage) / latestPrice
+        tokenQuantity = (usdtQuantity * leverage) / markPrice
         quantity = f"%.{qp}f"%tokenQuantity
         logging.info('quantity=====>{}'.format( quantity))
 
         # 止损市价单的触发价格
-        stopPrice = latestPrice
+        stopPrice = markPrice
         if side == 'BUY':   # 开多
-            stopPrice = latestPrice * (1 - stopRatio/leverage)
+            stopPrice = markPrice * (1 - stopRatio/leverage)
         else: # SELL  开空
-            stopPrice = latestPrice * (1 + stopRatio/leverage)
+            stopPrice = markPrice * (1 + stopRatio/leverage)
         stopPrice = f"%.{pp}f"%stopPrice # 要乘以杠杆倍数
 
         logging.info("stopPrice ===> {}".format(stopPrice))
