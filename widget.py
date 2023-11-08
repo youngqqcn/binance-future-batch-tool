@@ -56,8 +56,8 @@ class Widget(QWidget):
         self.ui.btnMakeShort.setStyleSheet("background-color: #ED4333")
 
 
-        self.ui.btnIncreaseMargin.setStyleSheet("background-color: #16E744")
-        self.ui.btnDecreaseMargin.setStyleSheet("background-color: #ED4333")
+        # self.ui.btnIncreaseMargin.setStyleSheet("background-color: #16E744")
+        # self.ui.btnDecreaseMargin.setStyleSheet("background-color: #ED4333")
 
 
         # add token 输入框正则验证器
