@@ -35,7 +35,7 @@ class Widget(QWidget):
         self.ui.setupUi(self)
 
 
-        self.setWindowTitle("合约批量下单工具v1.6-2023-11-08")
+        self.setWindowTitle("合约批量下单工具v1.7-2023-11-08")
         self.setWindowIcon(QIcon('logo.png'))
         self.setFixedSize(self.width(), self.height())
         #self.resize(800, 600)
