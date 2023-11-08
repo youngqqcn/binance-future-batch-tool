@@ -10,7 +10,7 @@ from binance.um_futures import UMFutures
 from binance.lib.utils import config_logging
 from binance.error import ClientError
 
-config_logging(logging, logging.DEBUG)
+config_logging(logging, logging.INFO)
 
 
 class  BnUmWrapper(object):
@@ -132,8 +132,8 @@ class  BnUmWrapper(object):
         assert usdtQuantity * leverage > 10  , '无效参数, usdtQuantity {}'.format(usdtQuantity)
         assert side in ['BUY', 'SELL'], '无效参数 side {}'.format(side)
         assert  'USDT' in symbol and len(symbol) > 5 , '无效参数 symbol, {}'.format(symbol)
-        assert 0 < stopRatio < 0.9, '无效止损： {}'.format(stopRatio)
-        assert 1 <= leverage <= 90 , '无效杠杆倍数: {}'.format(leverage)
+        assert 0 < stopRatio < 0.99, '无效止损： {}'.format(stopRatio)
+        assert 1 <= leverage <= 99 , '无效杠杆倍数: {}'.format(leverage)
 
         # 调整杠杆倍数
         self.changeLeverage(symbol=symbol, leverage=leverage)
