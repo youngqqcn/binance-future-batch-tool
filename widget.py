@@ -32,6 +32,7 @@ class Widget(QWidget):
 
         self.setWindowTitle("合约批量下单工具v1.5-2023-11-08")
         self.setWindowIcon(QIcon('logo.png'))
+        self.setFixedSize(self.width(), self.height())
         #self.resize(800, 600)
 
         # 初始化数据库
