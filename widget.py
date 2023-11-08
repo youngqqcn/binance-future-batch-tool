@@ -50,6 +50,11 @@ class Widget(QWidget):
         self.ui.btnMakeLong.setStyleSheet("background-color: #16E744")
         self.ui.btnMakeShort.setStyleSheet("background-color: #ED4333")
 
+
+        self.ui.btnIncreaseMargin.setStyleSheet("background-color: #16E744")
+        self.ui.btnDecreaseMargin.setStyleSheet("background-color: #ED4333")
+
+
         # add token 输入框正则验证器
         # addTokenVal = QRegularExpressionValidator("[A-Za-z0-9]{2,20}", self.ui.leToken)
         # self.ui.leToken.setValidator(addTokenVal)
@@ -71,6 +76,8 @@ class Widget(QWidget):
         amountVal = QDoubleValidator()
         amountVal.setRange(1, 1000)
         self.ui.leAmount.setValidator(amountVal)
+
+        self.ui.leAdjustMarginAmount.setValidator(amountVal)
 
 
         self.ui.leToken.textChanged.connect(self.autoCapitalize)
@@ -128,9 +135,74 @@ class Widget(QWidget):
         # 获取当前仓位
         # self.ui.btnGetCurrentPosition.clicked.connect(self.getCurrentPositionInfo)
 
+        # 减少保证金
+        self.ui.btnDecreaseMargin.clicked.connect(self.decreaseMargin)
+
+        # 追加保证金
+        self.ui.btnIncreaseMargin.clicked.connect(self.increaseMargin)
         pass
 
+    def decreaseMargin(self):
+        """减少保证金"""
+        a = self.ui.leAdjustMarginAmount.text()
+        a = float(a) * -1
+        self.__adjustMargin(a)
+
+    def increaseMargin(self):
+        """增加保证金"""
+        a = self.ui.leAdjustMarginAmount.text()
+        a = float(a)
+        self.__adjustMargin(a)
+
+    def __adjustMargin(self, amount):
+        """调整保证金"""
+        symbols = self.getSelectedSymbols()
+        if len(symbols) == 0:
+            QMessageBox.warning(self, '提示', f"请选择币种", QMessageBox.Yes)
+            return
+
+        if -0.1 < amount < 0.1:
+            QMessageBox.warning(self, '提示', f"调整数量太小!", QMessageBox.Yes)
+            return
+
+        side = '追加' if amount > 0 else '减少'
+        msgTxt = '调整保证金:\n调整方向: {}\n调整数量: {}'.format( side, abs(amount) )
+        reply = QMessageBox.question(self, '提示', f"{msgTxt}", QMessageBox.Yes, QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return
+
+
+        # 调整方向 1: 增加逐仓保证金，2: 减少逐仓保证金
+        typeNo = 1 if amount > 0 else 2
+
+
+        amount = float('%.2f'% abs(amount))
+        for symbol in symbols:
+            try:
+                resp = self.bnUmWrapper.um_futures_client.modify_isolated_position_margin(symbol=symbol, amount=abs(amount), type=typeNo)
+                if 'code' in resp:
+                    if resp['code'] in [0, 200]:
+                        continue
+                    else:
+                        QMessageBox.warning(self, '提示', "调整{}保证金失败! 错误信息:{}".format(symbol, error.error_message), QMessageBox.Yes)
+                        return
+            except ClientError as error:
+                logging.error('error_code: {}, error_msg: {}'.format(error.error_code, error.error_message))
+                QMessageBox.warning(self, '提示', "调整{}保证金失败! 错误信息:{}".format(symbol, error.error_message), QMessageBox.Yes)
+                return
+            except Exception as e:
+                print_exc(e)
+                QMessageBox.warning(self, '提示', "调整{}保证金失败!".format(symbol), QMessageBox.Yes)
+                return
+
+        QMessageBox.information(self, '提示', "调整{}保证金成功!".format(symbol), QMessageBox.Yes)
+        pass
+
+
+
+
     def updateAvailMargin(self):
+        """更新余额"""
 
         try:
             if self.bnUmWrapper is None:
@@ -895,7 +967,7 @@ class CreateOrderThread(QThread):
                         leverage=self.leverage
                     )
                 if resp is not None:
-                    if 'code' in resp[0] and resp[0]['code'] != 0:
+                    if 'code' in resp[0] and (resp[0]['code'] not in [0, 200]):
                         raise ClientError(resp[0]['code'],resp[0]['code'], resp[0]['msg'], None )
             except ClientError as error:
                 logging.error("Found error. status: {}, error code: {}, error message: {}".format(

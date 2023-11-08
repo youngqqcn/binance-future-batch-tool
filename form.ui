@@ -43,9 +43,9 @@
      <property name="geometry">
       <rect>
        <x>1140</x>
-       <y>230</y>
+       <y>150</y>
        <width>301</width>
-       <height>371</height>
+       <height>341</height>
       </rect>
      </property>
      <property name="title">
@@ -115,7 +115,7 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>300</y>
+        <y>280</y>
         <width>91</width>
         <height>41</height>
        </rect>
@@ -128,7 +128,7 @@
       <property name="geometry">
        <rect>
         <x>180</x>
-        <y>300</y>
+        <y>280</y>
         <width>91</width>
         <height>41</height>
        </rect>
@@ -236,7 +236,7 @@
      <property name="geometry">
       <rect>
        <x>1140</x>
-       <y>40</y>
+       <y>10</y>
        <width>301</width>
        <height>121</height>
       </rect>
@@ -295,6 +295,71 @@
         </widget>
        </item>
       </layout>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>1140</x>
+       <y>530</y>
+       <width>301</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>调整保证金:</string>
+     </property>
+     <widget class="QPushButton" name="btnDecreaseMargin">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>100</y>
+        <width>88</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>减少</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnIncreaseMargin">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>100</y>
+        <width>88</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>增加</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="leAdjustMarginAmount">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>50</y>
+        <width>201</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>USDT保证金调整量</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>调整量:</string>
+      </property>
      </widget>
     </widget>
    </widget>
