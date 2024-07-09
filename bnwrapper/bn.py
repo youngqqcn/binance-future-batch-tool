@@ -262,8 +262,8 @@ class  BnUmWrapper(object):
 
 def main():
 
-    apiKey = '8pIn3CxgkJ2m4k98i1CfZQdc6wXYmt0uzxrvfRxXuBEqljJT0TZhypz3F9WYYf2V'
-    secretKey = 'rE6uFZxkmROfhT1hXuFdu00BTTsDYEJ8WoIWyxZ8UIeTiVdvvYJr4HA2xuJaJD1m'
+    apiKey = 'TODO'
+    secretKey = 'TODO'
     bn =  BnUmWrapper(apiKey=apiKey, secretKey=secretKey)
 
     # print( bn.getAccountBalance(symbol='USDT') )
