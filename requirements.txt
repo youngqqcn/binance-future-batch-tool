@@ -1,3 +1,3 @@
-binance-futures-connector==4.0.0
-PySide6==6.6.0
-requests==2.31.0
+binance-futures-connector
+PySide6
+requests
